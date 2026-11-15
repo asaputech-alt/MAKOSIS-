@@ -1,415 +1,65 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Nairaly | NGN Forex & Gold Terminal</title>
+  <title>Nairaly | NGN Trading Terminal</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    body { background-color: #0b0e14; color: #e2e8f0; font-family: system-ui, -apple-system, sans-serif; }
-    .tabular { font-variant-numeric: tabular-nums; }
+    body { background-color: #0b0e14; color: #ffffff; font-family: system-ui, sans-serif; padding: 16px; }
   </style>
 </head>
-<body class="min-h-screen flex flex-col">
-
-  <!-- Setup Card (Appears if no key is saved yet) -->
-  <div id="setupCard" class="max-w-md w-full mx-auto my-auto p-6 bg-[#151a24] border border-slate-700 rounded-xl shadow-2xl hidden">
-    <h2 class="text-lg font-bold text-white mb-1">Nairaly Quick Connect</h2>
-    <p class="text-xs text-slate-400 mb-4">Project: <span class="text-emerald-400 font-mono">tovlcsrjjfmsvfeibvuo.supabase.co</span></p>
-    <label class="block text-xs font-medium text-slate-300 mb-1">Paste Your Supabase Public Anon Key</label>
-    <input id="apiKeyInput" type="text" placeholder="eyJ... or sb_publishable_..." class="w-full bg-[#0b0e14] border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white mb-4 focus:outline-none focus:border-emerald-500" />
-    <button onclick="saveApiKey()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2.5 rounded-lg text-sm transition">
-      Connect & Launch Nairaly
+<body>
+  <div style="max-width: 400px; margin: 30px auto; background: #151a24; padding: 24px; border-radius: 12px; border: 1px solid #334155;">
+    <h2 style="font-size: 20px; font-weight: bold; margin-bottom: 8px;">Nairaly Quick Connect</h2>
+    <p style="font-size: 13px; color: #94a3b8; margin-bottom: 16px;">Project: tovlcsrjjfmsvfeibvuo.supabase.co</p>
+    
+    <label style="font-size: 12px; display: block; margin-bottom: 6px; font-weight: 600;">Supabase Public Anon Key:</label>
+    <input id="keyInput" type="text" placeholder="Paste your anon key here..." style="width: 100%; padding: 12px; background: #0b0e14; border: 1px solid #475569; color: white; border-radius: 8px; margin-bottom: 16px; font-size: 13px;" />
+    
+    <button onclick="saveKey()" style="width: 100%; background: #10b981; color: white; padding: 12px; border: none; border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer;">
+      Launch Terminal
     </button>
-    <p id="setupMsg" class="text-xs text-center mt-3 text-rose-400"></p>
-  </div>
-
-  <!-- Deposit NGN Modal -->
-  <div id="depositModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-40 flex items-center justify-center p-4 hidden">
-    <div class="bg-[#151a24] border border-slate-700 rounded-xl max-w-sm w-full p-6">
-      <div class="flex justify-between items-center mb-4">
-        <h3 class="text-base font-bold text-white">Deposit Nigerian Naira (NGN)</h3>
-        <button onclick="toggleDepositModal(false)" class="text-slate-400 hover:text-white text-xl">&times;</button>
-      </div>
-      <label class="block text-xs text-slate-400 mb-1">Amount (₦)</label>
-      <input id="depositAmount" type="number" value="100000" min="1000" step="1000" class="w-full bg-[#0b0e14] border border-slate-700 rounded-lg px-3 py-2 text-white tabular mb-3" />
-      <div class="grid grid-cols-3 gap-2 mb-4">
-        <button onclick="document.getElementById('depositAmount').value=50000" class="bg-slate-800 hover:bg-slate-700 py-1.5 rounded text-xs tabular">₦50,000</button>
-        <button onclick="document.getElementById('depositAmount').value=250000" class="bg-slate-800 hover:bg-slate-700 py-1.5 rounded text-xs tabular">₦250,000</button>
-        <button onclick="document.getElementById('depositAmount').value=1000000" class="bg-slate-800 hover:bg-slate-700 py-1.5 rounded text-xs tabular">₦1,000,000</button>
-      </div>
-      <button id="depositBtn" onclick="depositNaira()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2.5 rounded-lg text-sm">
-        Credit Naira Wallet
-      </button>
-    </div>
-  </div>
-
-  <!-- Main App Wrapper -->
-  <div id="mainApp" class="flex flex-col flex-1 hidden">
-    <!-- Top Account Metrics Bar -->
-    <header class="bg-[#111620] border-b border-slate-800 px-4 py-3 sticky top-0 z-30">
-      <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-3">
-        <div class="flex items-center gap-2">
-          <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded text-xs font-bold">NGN</span>
-          <div>
-            <h1 class="text-sm font-bold text-white leading-tight">Nairaly Broker</h1>
-            <p id="accNumberDisplay" class="text-[11px] text-slate-400 font-mono">Connecting...</p>
-          </div>
-        </div>
-
-        <div class="flex items-center gap-4 text-xs tabular overflow-x-auto">
-          <div>
-            <span class="text-slate-400 block text-[10px]">BALANCE</span>
-            <span id="balanceDisplay" class="font-bold text-white text-sm">₦0.00</span>
-          </div>
-          <div>
-            <span class="text-slate-400 block text-[10px]">EQUITY</span>
-            <span id="equityDisplay" class="font-bold text-emerald-400 text-sm">₦0.00</span>
-          </div>
-          <div>
-            <span class="text-slate-400 block text-[10px]">FREE MARGIN</span>
-            <span id="freeMarginDisplay" class="font-semibold text-slate-200 text-sm">₦0.00</span>
-          </div>
-          <div>
-            <span class="text-slate-400 block text-[10px]">FX RATE</span>
-            <span class="font-semibold text-amber-400 text-sm">₦1,600/$1</span>
-          </div>
-        </div>
-
-        <div class="flex items-center gap-2">
-          <button onclick="toggleDepositModal(true)" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-xs font-semibold">
-            + Deposit ₦
-          </button>
-          <button onclick="resetApiKey()" title="Change API Key" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1.5 rounded-lg text-xs">
-            Reset Key
-          </button>
-        </div>
-      </div>
-    </header>
-
-    <!-- Main Trading Workspace -->
-    <main class="max-w-6xl w-full mx-auto p-4 grid grid-cols-1 lg:grid-cols-3 gap-4 flex-1">
-      
-      <!-- Left 2 Columns -->
-      <div class="lg:col-span-2 flex flex-col gap-4">
-        
-        <!-- Instrument Selector & Live Tick Banner -->
-        <div class="bg-[#111620] border border-slate-800 rounded-xl p-4">
-          <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
-            <div class="flex gap-2">
-              <button onclick="selectSymbol('XAUUSD')" id="sym-XAUUSD" class="sym-btn bg-amber-500/20 text-amber-400 border border-amber-500/40 px-3 py-1.5 rounded-lg text-xs font-bold">XAUUSD (Gold)</button>
-              <button onclick="selectSymbol('EURUSD')" id="sym-EURUSD" class="sym-btn bg-slate-800 text-slate-300 px-3 py-1.5 rounded-lg text-xs font-semibold">EURUSD</button>
-              <button onclick="selectSymbol('GBPUSD')" id="sym-GBPUSD" class="sym-btn bg-slate-800 text-slate-300 px-3 py-1.5 rounded-lg text-xs font-semibold">GBPUSD</button>
-            </div>
-            <div class="text-right tabular">
-              <span class="text-[11px] text-slate-400 block">LIVE MARKET PRICE</span>
-              <span id="livePriceDisplay" class="text-xl font-bold text-white">2,650.00</span>
-            </div>
-          </div>
-
-          <!-- Mini Live Price Canvas Chart -->
-          <div class="bg-[#0b0e14] border border-slate-800/80 rounded-lg p-3 h-48 relative flex items-end">
-            <canvas id="priceChart" class="w-full h-full"></canvas>
-          </div>
-        </div>
-
-        <!-- Open Positions & Ledger History -->
-        <div class="bg-[#111620] border border-slate-800 rounded-xl p-4 flex-1">
-          <div class="flex gap-4 border-b border-slate-800 pb-2 mb-3 text-xs font-semibold">
-            <button onclick="switchTab('positions')" id="tab-positions" class="text-emerald-400 border-b-2 border-emerald-400 pb-1">Open Positions (<span id="openCount">0</span>)</button>
-            <button onclick="switchTab('ledger')" id="tab-ledger" class="text-slate-400 hover:text-white pb-1">Naira Ledger History</button>
-          </div>
-
-          <!-- Open Positions Table -->
-          <div id="panel-positions" class="overflow-x-auto">
-            <table class="w-full text-left text-xs tabular">
-              <thead class="text-slate-400 border-b border-slate-800">
-                <tr>
-                  <th class="py-2">Symbol</th>
-                  <th>Side</th>
-                  <th>Lots</th>
-                  <th>Entry</th>
-                  <th>Margin (₦)</th>
-                  <th>Floating P&L</th>
-                  <th class="text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody id="positionsBody" class="divide-y divide-slate-800/60">
-                <tr><td colspan="7" class="py-6 text-center text-slate-500">No open positions yet. Place a trade!</td></tr>
-              </tbody>
-            </table>
-          </div>
-
-          <!-- Ledger Table -->
-          <div id="panel-ledger" class="overflow-x-auto hidden">
-            <table class="w-full text-left text-xs tabular">
-              <thead class="text-slate-400 border-b border-slate-800">
-                <tr>
-                  <th class="py-2">Type</th>
-                  <th>Direction</th>
-                  <th>Amount (₦)</th>
-                  <th>Reference</th>
-                </tr>
-              </thead>
-              <tbody id="ledgerBody" class="divide-y divide-slate-800/60">
-                <tr><td colspan="4" class="py-6 text-center text-slate-500">No ledger entries yet.</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <!-- Right Column: Order Execution Panel -->
-      <div class="bg-[#111620] border border-slate-800 rounded-xl p-4 h-fit">
-        <h2 class="text-sm font-bold text-white mb-3">New Order (<span id="orderSymbolLabel">XAUUSD</span>)</h2>
-        
-        <div class="mb-3">
-          <label class="block text-xs text-slate-400 mb-1">Volume (Lot Size)</label>
-          <input id="lotSizeInput" type="number" value="0.01" min="0.01" step="0.01" oninput="updateMarginPreview()" class="w-full bg-[#0b0e14] border border-slate-700 rounded-lg px-3 py-2 text-white tabular text-sm" />
-          <div class="grid grid-cols-4 gap-1.5 mt-1.5">
-            <button onclick="setLot(0.01)" class="bg-slate-800 hover:bg-slate-700 py-1 rounded text-[11px] tabular">0.01</button>
-            <button onclick="setLot(0.05)" class="bg-slate-800 hover:bg-slate-700 py-1 rounded text-[11px] tabular">0.05</button>
-            <button onclick="setLot(0.10)" class="bg-slate-800 hover:bg-slate-700 py-1 rounded text-[11px] tabular">0.10</button>
-            <button onclick="setLot(0.50)" class="bg-slate-800 hover:bg-slate-700 py-1 rounded text-[11px] tabular">0.50</button>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-2 gap-2 mb-4">
-          <div>
-            <label class="block text-[11px] text-slate-400 mb-1">Stop Loss (Optional)</label>
-            <input id="slInput" type="number" step="0.01" placeholder="0.00" class="w-full bg-[#0b0e14] border border-slate-700 rounded-lg px-2.5 py-1.5 text-white tabular text-xs" />
-          </div>
-          <div>
-            <label class="block text-[11px] text-slate-400 mb-1">Take Profit (Optional)</label>
-            <input id="tpInput" type="number" step="0.01" placeholder="0.00" class="w-full bg-[#0b0e14] border border-slate-700 rounded-lg px-2.5 py-1.5 text-white tabular text-xs" />
-          </div>
-        </div>
-
-        <!-- Margin & Contract Summary -->
-        <div class="bg-[#0b0e14] border border-slate-800 rounded-lg p-3 mb-4 text-xs space-y-1.5 tabular">
-          <div class="flex justify-between">
-            <span class="text-slate-400">Contract Size:</span>
-            <span id="contractSizePreview" class="text-slate-200">100 oz</span>
-          </div>
-          <div class="flex justify-between">
-            <span class="text-slate-400">Account Leverage:</span>
-            <span class="text-slate-200">1:100</span>
-          </div>
-          <div class="flex justify-between border-t border-slate-800 pt-1.5 font-semibold">
-            <span class="text-slate-300">Required Margin:</span>
-            <span id="requiredMarginPreview" class="text-amber-400">₦42,400.00</span>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-2 gap-2.5">
-          <button onclick="placeOrder('SELL')" class="bg-rose-600 hover:bg-rose-500 text-white font-bold py-3 rounded-lg text-xs transition shadow-lg shadow-rose-900/20">
-            SELL MARKET
-          </button>
-          <button onclick="placeOrder('BUY')" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-lg text-xs transition shadow-lg shadow-emerald-900/20">
-            BUY MARKET
-          </button>
-        </div>
-        <p id="statusMsg" class="text-xs text-center mt-3 text-slate-400"></p>
-      </div>
-
-    </main>
+    <p id="msg" style="font-size: 12px; color: #f87171; margin-top: 12px; text-align: center;"></p>
   </div>
 
   <script>
-    const SUPABASE_URL = 'https://tovlcsrjjfmsvfeibvuo.supabase.co';
-    const USD_NGN_RATE = 1600;
-    const LEVERAGE = 100;
-
-    const INSTRUMENTS = {
-      XAUUSD: { price: 2650.00, contract: 100, step: 0.45, decimals: 2, unit: '100 oz' },
-      EURUSD: { price: 1.0850,  contract: 100000, step: 0.0003, decimals: 5, unit: '100,000 EUR' },
-      GBPUSD: { price: 1.2920,  contract: 100000, step: 0.0004, decimals: 5, unit: '100,000 GBP' }
-    };
-
-    let supabaseClient = null;
-    let currentAccount = null;
-    let activeSymbol = 'XAUUSD';
-    let openPositions = [];
-    let priceHistory = [2648.5, 2649.1, 2648.8, 2649.6, 2650.2, 2649.9, 2650.0];
-
-    const fmtNGN = (num) => '₦' + Number(num || 0).toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
     window.addEventListener('DOMContentLoaded', () => {
-      const savedKey = localStorage.getItem('nairafx_supabase_key');
-      if (!savedKey) {
-        document.getElementById('setupCard').classList.remove('hidden');
-      } else {
-        initSupabase(savedKey);
+      const saved = localStorage.getItem('nairaly_key');
+      if (saved) {
+        document.getElementById('keyInput').value = saved;
       }
-      startMarketTick();
     });
 
-    function saveApiKey() {
-      const key = document.getElementById('apiKeyInput').value.trim();
-      if (!key) {
-        document.getElementById('setupMsg').innerText = 'Please paste your Supabase public anon key.';
+    function saveKey() {
+      const val = document.getElementById('keyInput').value.trim();
+      if (!val) {
+        document.getElementById('msg').innerText = 'Please paste your API key!';
         return;
       }
-      localStorage.setItem('nairafx_supabase_key', key);
-      document.getElementById('setupCard').classList.add('hidden');
-      initSupabase(key);
-    }
+      localStorage.setItem('nairaly_key', val);
+      document.getElementById('msg').style.color = '#34d399';
+      document.getElementById('msg').innerText = 'Key saved! Connecting to Supabase...';
 
-    function resetApiKey() {
-      localStorage.removeItem('nairafx_supabase_key');
-      location.reload();
-    }
-
-    async function initSupabase(key) {
-      supabaseClient = window.supabase.createClient(SUPABASE_URL, key);
-      document.getElementById('mainApp').classList.remove('hidden');
-      await loadOrCreateDemoAccount();
-      await refreshData();
-    }
-
-    async function loadOrCreateDemoAccount() {
-      let { data: accounts, error } = await supabaseClient.from('trading_accounts').select('*').limit(1);
-      if (error) {
-        document.getElementById('accNumberDisplay').innerText = 'API Error: Check Key';
-        alert('Database connection error: ' + error.message);
-        return;
-      }
-
-      if (accounts && accounts.length > 0) {
-        currentAccount = accounts[0];
-      } else {
-        const { data: user } = await supabaseClient
-          .from('users')
-          .insert([{ email: 'trader@nairafx.ng', password_hash: 'demo_hash_123', kyc_status: 'verified' }])
-          .select()
-          .single();
-
-        const { data: newAcc } = await supabaseClient
-          .from('trading_accounts')
-          .insert([{ user_id: user.id, currency: 'NGN', leverage: LEVERAGE, balance: 500000 }])
-          .select()
-          .single();
-
-        currentAccount = newAcc;
-      }
-      document.getElementById('accNumberDisplay').innerText = `ACC #${currentAccount.account_number} • 1:${currentAccount.leverage}`;
-    }
-
-    async function refreshData() {
-      if (!currentAccount) return;
-      const { data: acc } = await supabaseClient.from('trading_accounts').select('*').eq('id', currentAccount.id).single();
-      if (acc) currentAccount = acc;
-
-      const { data: pos } = await supabaseClient.from('positions').select('*').eq('account_id', currentAccount.id).eq('status', 'OPEN').order('opened_at', { ascending: false });
-      openPositions = pos || [];
-
-      const { data: ledger } = await supabaseClient.from('ledger_entries').select('*').eq('account_id', currentAccount.id).order('created_at', { ascending: false }).limit(15);
-      renderLedger(ledger || []);
-      updateMetricsAndTable();
-    }
-
-    async function depositNaira() {
-      const amount = parseFloat(document.getElementById('depositAmount').value);
-      if (!amount || amount <= 0) return;
-      document.getElementById('depositBtn').innerText = 'Crediting...';
-
-      const newBalance = Number(currentAccount.balance) + amount;
-      await supabaseClient.from('trading_accounts').update({ balance: newBalance }).eq('id', currentAccount.id);
-      await supabaseClient.from('ledger_entries').insert([{
-        transaction_group_id: crypto.randomUUID(),
-        account_id: currentAccount.id,
-        entry_type: 'DEPOSIT',
-        direction: 'CREDIT',
-        amount: amount,
-        reference: 'NGN_DEP_' + Date.now()
-      }]);
-
-      document.getElementById('depositBtn').innerText = 'Credit Naira Wallet';
-      toggleDepositModal(false);
-      await refreshData();
-    }
-
-    async function placeOrder(side) {
-      if (!currentAccount) return;
-      const lotSize = parseFloat(document.getElementById('lotSizeInput').value);
-      if (!lotSize || lotSize < 0.01) return alert('Minimum lot size is 0.01');
-
-      const inst = INSTRUMENTS[activeSymbol];
-      const entryPrice = inst.price;
-      const requiredMargin = (lotSize * inst.contract * entryPrice * USD_NGN_RATE) / LEVERAGE;
-
-      const { freeMargin } = calculateAccountTotals();
-      if (requiredMargin > freeMargin) {
-        return alert(`Insufficient Free Margin! Need ${fmtNGN(requiredMargin)}, available ${fmtNGN(freeMargin)}. Deposit more Naira.`);
-      }
-
-      const sl = parseFloat(document.getElementById('slInput').value) || null;
-      const tp = parseFloat(document.getElementById('tpInput').value) || null;
-
-      document.getElementById('statusMsg').innerText = 'Executing NGN order...';
-      const { error } = await supabaseClient.from('positions').insert([{
-        account_id: currentAccount.id,
-        symbol: activeSymbol,
-        side: side,
-        lot_size: lotSize,
-        contract_size: inst.contract,
-        open_price: entryPrice,
-        stop_loss: sl,
-        take_profit: tp,
-        usd_ngn_rate: USD_NGN_RATE,
-        margin_used_ngn: requiredMargin,
-        status: 'OPEN'
-      }]);
-
-      if (error) {
-        document.getElementById('statusMsg').innerText = 'Error: ' + error.message;
-      } else {
-        document.getElementById('statusMsg').innerText = `${side} ${lotSize} ${activeSymbol} opened @ ${entryPrice}`;
-        await refreshData();
+      try {
+        const client = window.supabase.createClient('https://tovlcsrjjfmsvfeibvuo.supabase.co', val);
+        client.from('trading_accounts').select('*').limit(1).then(res => {
+          if (res.error) {
+            document.getElementById('msg').style.color = '#f87171';
+            document.getElementById('msg').innerText = 'DB Error: ' + res.error.message;
+          } else {
+            document.getElementById('msg').innerText = 'Connected! Loading dashboard...';
+            setTimeout(() => {
+              location.reload();
+            }, 800);
+          }
+        });
+      } catch (e) {
+        document.getElementById('msg').style.color = '#f87171';
+        document.getElementById('msg').innerText = 'Error: ' + e.message;
       }
     }
-
-    async function closePosition(posId) {
-      const pos = openPositions.find(p => p.id === posId);
-      if (!pos) return;
-
-      const currentPrice = INSTRUMENTS[pos.symbol].price;
-      const pnlNGN = calcFloatingPnL(pos, currentPrice);
-      const newBalance = Math.max(0, Number(currentAccount.balance) + pnlNGN);
-
-      await supabaseClient.from('positions').update({
-        status: 'CLOSED',
-        close_price: currentPrice,
-        realized_pnl_ngn: pnlNGN,
-        closed_at: new Date().toISOString()
-      }).eq('id', pos.id);
-
-      await supabaseClient.from('trading_accounts').update({ balance: newBalance }).eq('id', currentAccount.id);
-
-      if (pnlNGN !== 0) {
-        await supabaseClient.from('ledger_entries').insert([{
-          transaction_group_id: crypto.randomUUID(),
-          account_id: currentAccount.id,
-          entry_type: 'TRADE_PNL',
-          direction: pnlNGN >= 0 ? 'CREDIT' : 'DEBIT',
-          amount: Math.abs(pnlNGN),
-          reference: `CLOSE_${pos.symbol}_${Date.now()}`
-        }]);
-      }
-
-      await refreshData();
-    }
-
-    function calcFloatingPnL(pos, currentPrice) {
-      const diff = pos.side === 'BUY' ? (currentPrice - Number(pos.open_price)) : (Number(pos.open_price) - currentPrice);
-      return diff * Number(pos.lot_size) * Number(pos.contract_size) * Number(pos.usd_ngn_rate);
-    }
-
-    function calculateAccountTotals() {
-      const balance = Number(currentAccount?.balance || 0);
-      let totalFloating = 0;
-      let totalMargin = 0;
-      openPositions.forEach(p => {
-        totalFloating += calcFloatingPnL(p, INSTRUMENTS[p.symbol].price);
-        totalMargin += Number(
+  </script>
+</body>
+</html>
