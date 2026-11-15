@@ -3,9 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Nairaly | Multi-Asset Broker Terminal</title>
+  <title>Nairaly | Pro Trading Terminal</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
   <style>
     body { background-color: #0b0e14; color: #e2e8f0; font-family: system-ui, -apple-system, sans-serif; }
     .tabular { font-variant-numeric: tabular-nums; }
@@ -13,14 +14,14 @@
 </head>
 <body class="min-h-screen flex flex-col">
 
-  <!-- Setup Card (Appears if no key is saved yet) -->
+  <!-- Setup Card -->
   <div id="setupCard" class="max-w-md w-full mx-auto my-auto p-6 bg-[#151a24] border border-slate-700 rounded-xl shadow-2xl hidden">
     <h2 class="text-lg font-bold text-white mb-1">Nairaly Quick Connect</h2>
     <p class="text-xs text-slate-400 mb-4">Project: <span class="text-emerald-400 font-mono">tovlcsrjjfmsvfeibvuo.supabase.co</span></p>
     <label class="block text-xs font-medium text-slate-300 mb-1">Paste Your Supabase Public Anon Key</label>
     <input id="apiKeyInput" type="text" placeholder="eyJ... or sb_publishable_..." class="w-full bg-[#0b0e14] border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white mb-4 focus:outline-none focus:border-emerald-500" />
     <button onclick="saveApiKey()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2.5 rounded-lg text-sm transition">
-      Connect & Launch Nairaly
+      Connect & Launch Terminal
     </button>
     <p id="setupMsg" class="text-xs text-center mt-3 text-rose-400"></p>
   </div>
@@ -47,13 +48,12 @@
 
   <!-- Main App Wrapper -->
   <div id="mainApp" class="flex flex-col flex-1 hidden">
-    <!-- Top Metrics Bar -->
     <header class="bg-[#111620] border-b border-slate-800 px-4 py-3 sticky top-0 z-30">
       <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-3">
         <div class="flex items-center gap-2">
           <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded text-xs font-bold">NGN</span>
           <div>
-            <h1 class="text-sm font-bold text-white leading-tight">Nairaly Global</h1>
+            <h1 class="text-sm font-bold text-white leading-tight">Nairaly Pro Terminal</h1>
             <p id="accNumberDisplay" class="text-[11px] text-slate-400 font-mono">Loading Account...</p>
           </div>
         </div>
@@ -73,59 +73,48 @@
           </div>
           <div>
             <span class="text-slate-400 block text-[10px]">USD/NGN</span>
-            <span class="font-semibold text-amber-400 text-sm">₦1,600</span>
+            <span id="fxRateDisplay" class="font-semibold text-amber-400 text-sm">₦1,600</span>
           </div>
         </div>
 
         <div class="flex items-center gap-2">
-          <button onclick="toggleDepositModal(true)" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-xs font-semibold">
-            + Deposit ₦
-          </button>
-          <button onclick="resetApiKey()" title="Reset Key" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1.5 rounded-lg text-xs">
-            Reset
-          </button>
+          <button onclick="toggleDepositModal(true)" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-xs font-semibold">+ Deposit ₦</button>
+          <button onclick="resetApiKey()" title="Reset Key" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1.5 rounded-lg text-xs">Reset</button>
         </div>
       </div>
     </header>
 
-    <!-- Main Workspace -->
     <main class="max-w-6xl w-full mx-auto p-4 grid grid-cols-1 lg:grid-cols-3 gap-4 flex-1">
-      
-      <!-- Left 2 Columns: Markets & Open Positions -->
       <div class="lg:col-span-2 flex flex-col gap-4">
-        
-        <!-- Multi-Asset Selector & Chart -->
         <div class="bg-[#111620] border border-slate-800 rounded-xl p-4">
-          <!-- Asset Category Filters -->
           <div class="flex flex-wrap items-center justify-between gap-2 mb-3 border-b border-slate-800 pb-3">
             <div class="flex flex-wrap gap-1.5">
               <span class="text-xs text-slate-400 self-center mr-1">Markets:</span>
-              <button onclick="selectSymbol('XAUUSD')" id="sym-XAUUSD" class="sym-btn bg-amber-500/20 text-amber-400 border border-amber-500/40 px-2.5 py-1 rounded-lg text-xs font-bold">Gold (XAUUSD)</button>
+              <button onclick="selectSymbol('XAUUSD')" id="sym-XAUUSD" class="sym-btn bg-amber-500/20 text-amber-400 border border-amber-500/40 px-2.5 py-1 rounded-lg text-xs font-bold">Gold</button>
               <button onclick="selectSymbol('EURUSD')" id="sym-EURUSD" class="sym-btn bg-slate-800 text-slate-300 px-2.5 py-1 rounded-lg text-xs font-semibold">EURUSD</button>
-              <button onclick="selectSymbol('AAPL')" id="sym-AAPL" class="sym-btn bg-slate-800 text-slate-300 px-2.5 py-1 rounded-lg text-xs font-semibold">Apple (AAPL)</button>
-              <button onclick="selectSymbol('TSLA')" id="sym-TSLA" class="sym-btn bg-slate-800 text-slate-300 px-2.5 py-1 rounded-lg text-xs font-semibold">Tesla (TSLA)</button>
-              <button onclick="selectSymbol('NVDA')" id="sym-NVDA" class="sym-btn bg-slate-800 text-slate-300 px-2.5 py-1 rounded-lg text-xs font-semibold">NVIDIA (NVDA)</button>
+              <button onclick="selectSymbol('AAPL')" id="sym-AAPL" class="sym-btn bg-slate-800 text-slate-300 px-2.5 py-1 rounded-lg text-xs font-semibold">AAPL</button>
+              <button onclick="selectSymbol('TSLA')" id="sym-TSLA" class="sym-btn bg-slate-800 text-slate-300 px-2.5 py-1 rounded-lg text-xs font-semibold">TSLA</button>
+              <button onclick="selectSymbol('NVDA')" id="sym-NVDA" class="sym-btn bg-slate-800 text-slate-300 px-2.5 py-1 rounded-lg text-xs font-semibold">NVDA</button>
             </div>
             <div class="text-right tabular">
               <span class="text-[10px] text-slate-400 block">LIVE PRICE ($)</span>
               <span id="livePriceDisplay" class="text-lg font-bold text-white">2,650.00</span>
             </div>
           </div>
-
-          <!-- Live Chart Canvas -->
-          <div class="bg-[#0b0e14] border border-slate-800/80 rounded-lg p-3 h-44 relative flex items-end">
-            <canvas id="priceChart" class="w-full h-full"></canvas>
+          
+          <div id="tvChartContainer" class="w-full h-64 rounded-lg overflow-hidden bg-[#0b0e14] border border-slate-800"></div>
+          <div class="flex items-center justify-between mt-2 text-[11px] text-slate-400 px-1">
+            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block"></span> EMA 9</span>
+            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block"></span> EMA 21</span>
+            <span class="text-emerald-400 font-semibold">MT5 Candlesticks Active</span>
           </div>
         </div>
 
-        <!-- Open Positions & Ledger -->
         <div class="bg-[#111620] border border-slate-800 rounded-xl p-4 flex-1">
           <div class="flex gap-4 border-b border-slate-800 pb-2 mb-3 text-xs font-semibold">
             <button onclick="switchTab('positions')" id="tab-positions" class="text-emerald-400 border-b-2 border-emerald-400 pb-1">Open Positions (<span id="openCount">0</span>)</button>
             <button onclick="switchTab('ledger')" id="tab-ledger" class="text-slate-400 hover:text-white pb-1">Naira Ledger History</button>
           </div>
-
-          <!-- Positions Table -->
           <div id="panel-positions" class="overflow-x-auto">
             <table class="w-full text-left text-xs tabular">
               <thead class="text-slate-400 border-b border-slate-800">
@@ -140,12 +129,10 @@
                 </tr>
               </thead>
               <tbody id="positionsBody" class="divide-y divide-slate-800/60">
-                <tr><td colspan="7" class="py-6 text-center text-slate-500">No open trades. Pick an asset and execute!</td></tr>
+                <tr><td colspan="7" class="py-6 text-center text-slate-500">No open trades. Execute a position!</td></tr>
               </tbody>
             </table>
           </div>
-
-          <!-- Ledger Table -->
           <div id="panel-ledger" class="overflow-x-auto hidden">
             <table class="w-full text-left text-xs tabular">
               <thead class="text-slate-400 border-b border-slate-800">
@@ -164,10 +151,8 @@
         </div>
       </div>
 
-      <!-- Right Column: Order Ticket -->
       <div class="bg-[#111620] border border-slate-800 rounded-xl p-4 h-fit">
         <h2 class="text-sm font-bold text-white mb-3">Order Ticket (<span id="orderSymbolLabel">XAUUSD</span>)</h2>
-        
         <div class="mb-3">
           <label id="volumeLabel" class="block text-xs text-slate-400 mb-1">Lot Size / Shares</label>
           <input id="lotSizeInput" type="number" value="0.01" min="0.01" step="0.01" oninput="updateMarginPreview()" class="w-full bg-[#0b0e14] border border-slate-700 rounded-lg px-3 py-2 text-white tabular text-sm" />
@@ -178,8 +163,6 @@
             <button onclick="setLot(1.00)" class="bg-slate-800 hover:bg-slate-700 py-1 rounded text-[11px] tabular">1.00</button>
           </div>
         </div>
-
-        <!-- Margin & Financial Summary -->
         <div class="bg-[#0b0e14] border border-slate-800 rounded-lg p-3 mb-4 text-xs space-y-1.5 tabular">
           <div class="flex justify-between">
             <span class="text-slate-400">Asset Type:</span>
@@ -194,43 +177,18 @@
             <span id="requiredMarginPreview" class="text-amber-400">₦42,400.00</span>
           </div>
         </div>
-
         <div class="grid grid-cols-2 gap-2.5">
-          <button onclick="placeOrder('SELL')" class="bg-rose-600 hover:bg-rose-500 text-white font-bold py-3 rounded-lg text-xs transition shadow-lg shadow-rose-900/20">
-            SELL SHORT
-          </button>
-          <button onclick="placeOrder('BUY')" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-lg text-xs transition shadow-lg shadow-emerald-900/20">
-            BUY LONG
-          </button>
+          <button onclick="placeOrder('SELL')" class="bg-rose-600 hover:bg-rose-500 text-white font-bold py-3 rounded-lg text-xs transition shadow-lg shadow-rose-900/20">SELL SHORT</button>
+          <button onclick="placeOrder('BUY')" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-lg text-xs transition shadow-lg shadow-emerald-900/20">BUY LONG</button>
         </div>
         <p id="statusMsg" class="text-xs text-center mt-3 text-slate-400"></p>
       </div>
-
     </main>
   </div>
 
   <script>
     const SUPABASE_URL = 'https://tovlcsrjjfmsvfeibvuo.supabase.co';
-    const let USD_NGN_RATE = 1600; // Default baseline fallback
-
-async function fetchLiveExchangeRate() {
-  try {
-    // Using a reliable, free public endpoint for USD base rates
-    const response = await fetch('https://open.er-api.com/v6/latest/USD');
-    const data = await response.json();
-    
-    if (data && data.rates && data.rates.NGN) {
-      USD_NGN_RATE = Number(data.rates.NGN);
-      // Update the UI header badge dynamically if you have an element for it
-      console.log(`Live USD/NGN Rate Loaded: ₦${USD_NGN_RATE.toFixed(2)}`);
-    }
-  } catch (err) {
-    console.warn('Could not fetch live FX rate, using default fallback: ₦1,600');
-  }
-}
-
-// Call this inside your window load or init sequence before starting ticks
-    ;
+    let USD_NGN_RATE = 1600;
 
     const INSTRUMENTS = {
       XAUUSD: { name: 'Gold', type: 'Commodity', price: 2650.00, contract: 100, leverage: 100, step: 0.45, decimals: 2 },
@@ -244,11 +202,19 @@ async function fetchLiveExchangeRate() {
     let currentAccount = null;
     let activeSymbol = 'XAUUSD';
     let openPositions = [];
-    let priceHistory = [2648.5, 2649.1, 2648.8, 2649.6, 2650.2, 2649.9, 2650.0];
+    
+    let tvChart = null;
+    let candleSeries = null;
+    let ema9Series = null;
+    let ema21Series = null;
+    let chartCandles = [];
 
     const fmtNGN = (num) => '₦' + Number(num || 0).toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-    window.addEventListener('DOMContentLoaded', () => {
+    window.addEventListener('DOMContentLoaded', async () => {
+      await fetchLiveExchangeRate();
+      initTradingViewChart();
+      
       const savedKey = localStorage.getItem('nairaly_supabase_key');
       if (!savedKey) {
         document.getElementById('setupCard').classList.remove('hidden');
@@ -257,6 +223,100 @@ async function fetchLiveExchangeRate() {
       }
       startMarketTick();
     });
+
+    async function fetchLiveExchangeRate() {
+      try {
+        const response = await fetch('https://open.er-api.com/v6/latest/USD');
+        const data = await response.json();
+        if (data && data.rates && data.rates.NGN) {
+          USD_NGN_RATE = Number(data.rates.NGN);
+          document.getElementById('fxRateDisplay').innerText = '₦' + USD_NGN_RATE.toLocaleString('en-NG', { maximumFractionDigits: 0 });
+        }
+      } catch (err) {
+        console.warn('Using default fallback FX rate');
+      }
+    }
+
+    function initTradingViewChart() {
+      const container = document.getElementById('tvChartContainer');
+      tvChart = LightweightCharts.createChart(container, {
+        width: container.clientWidth,
+        height: 256,
+        layout: {
+          background: { type: 'solid', color: '#0b0e14' },
+          textColor: '#94a3b8',
+        },
+        grid: {
+          vertLines: { color: '#1e293b' },
+          horzLines: { color: '#1e293b' },
+        },
+        timeScale: {
+          timeVisible: true,
+          secondsVisible: true,
+          borderColor: '#334155',
+        },
+        rightPriceScale: {
+          borderColor: '#334155',
+        },
+      });
+
+      candleSeries = tvChart.addCandlestickSeries({
+        upColor: '#10b981',
+        downColor: '#f43f5e',
+        borderDownColor: '#f43f5e',
+        borderUpColor: '#10b981',
+        wickDownColor: '#f43f5e',
+        wickUpColor: '#10b981',
+      });
+
+      ema9Series = tvChart.addLineSeries({ color: '#3b82f6', lineWidth: 2, title: 'EMA 9' });
+      ema21Series = tvChart.addLineSeries({ color: '#f59e0b', lineWidth: 2, title: 'EMA 21' });
+
+      generateInitialCandles();
+      window.addEventListener('resize', () => {
+        tvChart.resize(container.clientWidth, 256);
+      });
+    }
+
+    function generateInitialCandles() {
+      const base = INSTRUMENTS[activeSymbol].price;
+      const now = Math.floor(Date.now() / 1000) - (60 * 60);
+      chartCandles = [];
+      let lastClose = base - 5;
+
+      for (let i = 0; i < 50; i++) {
+        const time = now + (i * 60);
+        const open = lastClose;
+        const change = (Math.random() - 0.48) * INSTRUMENTS[activeSymbol].step * 5;
+        const close = open + change;
+        const high = Math.max(open, close) + Math.random() * INSTRUMENTS[activeSymbol].step * 2;
+        const low = Math.min(open, close) - Math.random() * INSTRUMENTS[activeSymbol].step * 2;
+        lastClose = close;
+        chartCandles.push({ time, open, high, low, close });
+      }
+      updateChartData();
+    }
+
+    function updateChartData() {
+      if (!candleSeries) return;
+      candleSeries.setData(chartCandles);
+      ema9Series.setData(calculateEMA(chartCandles, 9));
+      ema21Series.setData(calculateEMA(chartCandles, 21));
+      tvChart.timeScale().fitContent();
+    }
+
+    function calculateEMA(data, period) {
+      const k = 2 / (period + 1);
+      let emaArray = [];
+      let prevEMA = data[0].close;
+      
+      data.forEach((bar, index) => {
+        let currentEMA = index === 0 ? bar.close : (bar.close * k) + (prevEMA * (1 - k));
+        prevEMA = currentEMA;
+        emaArray.push({ time: bar.time, value: currentEMA });
+      });
+      return emaArray;
+    }
 
     function saveApiKey() {
       const key = document.getElementById('apiKeyInput').value.trim();
@@ -285,7 +345,6 @@ async function fetchLiveExchangeRate() {
       let { data: accounts, error } = await supabaseClient.from('trading_accounts').select('*').limit(1);
       if (error) {
         document.getElementById('accNumberDisplay').innerText = 'Connection Error';
-        alert('DB Error: ' + error.message);
         return;
       }
 
@@ -306,7 +365,7 @@ async function fetchLiveExchangeRate() {
 
         currentAccount = newAcc;
       }
-      document.getElementById('accNumberDisplay').innerText = `ACC #${currentAccount.account_number} • Multi-Asset`;
+      document.getElementById('accNumberDisplay').innerText = `ACC #${currentAccount.account_number} • Pro`;
     }
 
     async function refreshData() {
@@ -437,7 +496,7 @@ async function fetchLiveExchangeRate() {
 
       const tbody = document.getElementById('positionsBody');
       if (openPositions.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" class="py-6 text-center text-slate-500">No open trades. Pick an asset and execute!</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="py-6 text-center text-slate-500">No open trades. Execute a position!</td></tr>';
         return;
       }
 
@@ -508,7 +567,7 @@ async function fetchLiveExchangeRate() {
         `;
       }
 
-      priceHistory = Array.from({ length: 12 }, (_, i) => inst.price + (Math.random() - 0.5) * inst.step * 4);
+      generateInitialCandles();
       updateMarginPreview();
     }
 
@@ -526,45 +585,23 @@ async function fetchLiveExchangeRate() {
 
     function startMarketTick() {
       setInterval(() => {
-        Object.keys(INSTRUMENTS).forEach(sym => {
-          const inst = INSTRUMENTS[sym];
-          const delta = (Math.random() - 0.49) * inst.step;
-          inst.price = Number((inst.price + delta).toFixed(inst.decimals));
-        });
+        const inst = INSTRUMENTS[activeSymbol];
+        const delta = (Math.random() - 0.49) * inst.step;
+        inst.price = Number((inst.price + delta).toFixed(inst.decimals));
 
-        const currentInst = INSTRUMENTS[activeSymbol];
-        document.getElementById('livePriceDisplay').innerText = currentInst.price.toLocaleString('en-US', { minimumFractionDigits: currentInst.decimals });
-        priceHistory.push(currentInst.price);
-        if (priceHistory.length > 30) priceHistory.shift();
+        document.getElementById('livePriceDisplay').innerText = inst.price.toLocaleString('en-US', { minimumFractionDigits: inst.decimals });
 
-        drawChart();
+        if (chartCandles.length > 0) {
+          const lastCandle = chartCandles[chartCandles.length - 1];
+          lastCandle.close = inst.price;
+          lastCandle.high = Math.max(lastCandle.high, inst.price);
+          lastCandle.low = Math.min(lastCandle.low, inst.price);
+          updateChartData();
+        }
+
         updateMarginPreview();
         if (currentAccount) updateMetricsAndTable();
       }, 1200);
-    }
-
-    function drawChart() {
-      const canvas = document.getElementById('priceChart');
-      if (!canvas) return;
-      const ctx = canvas.getContext('2d');
-      canvas.width = canvas.offsetWidth;
-      canvas.height = canvas.offsetHeight;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      const min = Math.min(...priceHistory);
-      const max = Math.max(...priceHistory);
-      const range = max - min || 1;
-
-      ctx.strokeStyle = '#10b981';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      priceHistory.forEach((p, idx) => {
-        const x = (idx / (priceHistory.length - 1)) * canvas.width;
-        const y = canvas.height - ((p - min) / range) * (canvas.height - 20) - 10;
-        if (idx ===0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
-      });
-      ctx.stroke();
     }
 
     function switchTab(tab) {
@@ -580,3 +617,5 @@ async function fetchLiveExchangeRate() {
   </script>
 </body>
 </html>
+
+  
