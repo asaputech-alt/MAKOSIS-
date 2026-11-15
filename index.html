@@ -97,6 +97,17 @@
               <span id="livePriceDisplay" class="text-lg font-bold text-white">2,650.00</span>
             </div>
           </div>
+                    <!-- Timeframe Selector Toolbar -->
+          <div class="flex items-center justify-between mb-2 bg-[#0b0e14] px-3 py-1.5 rounded-lg border border-slate-800 text-xs">
+            <span class="text-slate-400">Timeframe:</span>
+            <div class="flex gap-1">
+              <button onclick="setTimeframe('1m')" id="tf-1m" class="tf-btn px-2 py-0.5 rounded bg-emerald-600 text-white font-bold">1M</button>
+              <button onclick="setTimeframe('5m')" id="tf-5m" class="tf-btn px-2 py-0.5 rounded bg-slate-800 text-slate-300">5M</button>
+              <button onclick="setTimeframe('15m')" id="tf-15m" class="tf-btn px-2 py-0.5 rounded bg-slate-800 text-slate-300">15M</button>
+              <button onclick="setTimeframe('1h')" id="tf-1h" class="tf-btn px-2 py-0.5 rounded bg-slate-800 text-slate-300">1H</button>
+              <button onclick="setTimeframe('1d')" id="tf-1d" class="tf-btn px-2 py-0.5 rounded bg-slate-800 text-slate-300">1D</button>
+            </div>
+          </div>
           
           <div id="tvChartContainer" class="w-full h-64 rounded-lg overflow-hidden bg-[#0b0e14] border border-slate-800"></div>
           <div class="flex items-center justify-between mt-2 text-[11px] text-slate-400 px-1">
@@ -254,7 +265,43 @@
           borderColor: '#334155',
         },
       });
+    let currentTimeframe = '1m';
 
+    function setTimeframe(tf) {
+      currentTimeframe = tf;
+      document.querySelectorAll('.tf-btn').forEach(b => {
+        b.className = 'tf-btn px-2 py-0.5 rounded bg-slate-800 text-slate-300';
+      });
+      document.getElementById('tf-' + tf).className = 'tf-btn px-2 py-0.5 rounded bg-emerald-600 text-white font-bold';
+      generateInitialCandles(tf);
+    }
+
+    function generateInitialCandles(tf = '1m') {
+      const base = INSTRUMENTS[activeSymbol].price;
+      let intervalSeconds = 60;
+      if (tf === '5m') intervalSeconds = 300;
+      if (tf === '15m') intervalSeconds = 900;
+      if (tf === '1h') intervalSeconds = 3600;
+      if (tf === '4h') intervalSeconds = 14400;
+      if (tf === '1d') intervalSeconds = 86400;
+
+      const now = Math.floor(Date.now() / 1000) - (50 * intervalSeconds);
+      chartCandles = [];
+      let lastClose = base - (base * 0.002);
+
+      for (let i = 0; i < 50; i++) {
+        const time = now + (i * intervalSeconds);
+        const open = lastClose;
+        const change = (Math.random() - 0.48) * INSTRUMENTS[activeSymbol].step * 6;
+        const close = open + change;
+        const high = Math.max(open, close) + Math.random() * INSTRUMENTS[activeSymbol].step * 3;
+        const low = Math.min(open, close) - Math.random() * INSTRUMENTS[activeSymbol].step * 3;
+        lastClose = close;
+        chartCandles.push({ time, open, high, low, close });
+      }
+      updateChartData();
+          }
+          
       candleSeries = tvChart.addCandlestickSeries({
         upColor: '#10b981',
         downColor: '#f43f5e',
