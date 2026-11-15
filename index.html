@@ -14,16 +14,37 @@
 </head>
 <body class="min-h-screen flex flex-col">
 
-  <div id="setupCard" class="max-w-md w-full mx-auto my-auto p-6 bg-[#151a24] border border-slate-700 rounded-xl shadow-2xl hidden">
-    <h2 class="text-lg font-bold text-white mb-1">Nairaly Quick Connect</h2>
-    <p class="text-xs text-slate-400 mb-4">Project: <span class="text-emerald-400 font-mono">tovlcsrjjfmsvfeibvuo.supabase.co</span></p>
-    <label class="block text-xs font-medium text-slate-300 mb-1">Paste Your Supabase Public Anon Key</label>
-    <input id="apiKeyInput" type="text" placeholder="eyJ..." class="w-full bg-[#0b0e14] border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white mb-4 focus:outline-none focus:border-emerald-500" />
-    <button onclick="saveApiKey()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2.5 rounded-lg text-sm transition">
-      Connect & Launch Terminal
+  <!-- Auth Screen (Login / Sign Up) -->
+  <div id="authCard" class="max-w-md w-full mx-auto my-auto p-6 bg-[#151a24] border border-slate-700 rounded-xl shadow-2xl hidden">
+    <div class="flex items-center justify-between mb-4">
+      <h2 id="authTitle" class="text-lg font-bold text-white">Nairaly Pro Login</h2>
+      <span class="text-xs text-emerald-400 font-mono">NGN Broker</span>
+    </div>
+
+    <!-- API Key Input -->
+    <div id="apiKeyGroup" class="mb-4">
+      <label class="block text-xs font-medium text-slate-300 mb-1">Supabase Public Anon Key</label>
+      <input id="apiKeyInput" type="text" placeholder="eyJ..." class="w-full bg-[#0b0e14] border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500" />
+    </div>
+
+    <label class="block text-xs font-medium text-slate-300 mb-1">Email Address</label>
+    <input id="authEmail" type="email" placeholder="trader@nairaly.ng" class="w-full bg-[#0b0e14] border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white mb-3 focus:outline-none focus:border-emerald-500" />
+    
+    <label class="block text-xs font-medium text-slate-300 mb-1">Password</label>
+    <input id="authPassword" type="password" placeholder="••••••••" class="w-full bg-[#0b0e14] border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white mb-4 focus:outline-none focus:border-emerald-500" />
+
+    <button id="authSubmitBtn" onclick="handleAuthSubmit()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2.5 rounded-lg text-sm transition mb-3">
+      Log In to Terminal
     </button>
-    <p id="setupMsg" class="text-xs text-center mt-3 text-rose-400"></p>
+
+    <div class="flex justify-between items-center text-xs text-slate-400">
+      <span id="authToggleText">Don't have an account?</span>
+      <button onclick="toggleAuthMode()" id="authToggleBtn" class="text-emerald-400 hover:underline font-semibold">Sign Up</button>
+    </div>
+
+    <p id="authMsg" class="text-xs text-center mt-3 text-rose-400"></p>
   </div>
+  
 
   <div id="depositModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-40 flex items-center justify-center p-4 hidden">
     <div class="bg-[#151a24] border border-slate-700 rounded-xl max-w-sm w-full p-6">
@@ -221,12 +242,8 @@
       await fetchLiveExchangeRate();
       initTradingViewChart();
       
-      const savedKey = localStorage.getItem('nairaly_supabase_key');
-      if (!savedKey) {
-        document.getElementById('setupCard').classList.remove('hidden');
-      } else {
-        initSupabase(savedKey);
-      }
+         checkAuthSession();
+      
       startMarketTick();
     });
 
@@ -654,7 +671,123 @@
 
     function toggleDepositModal(show) {
       document.getElementById('depositModal').classList.toggle('hidden', !show);
+    }    let isSignUpMode = false;
+
+    function checkAuthSession() {
+      const savedKey = localStorage.getItem('nairaly_supabase_key');
+      const savedUserId = localStorage.getItem('nairaly_user_id');
+
+      if (!savedKey) {
+        document.getElementById('authCard').classList.remove('hidden');
+        document.getElementById('apiKeyGroup').classList.remove('hidden');
+      } else {
+        document.getElementById('apiKeyGroup').classList.add('hidden');
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, savedKey);
+        if (savedUserId) {
+          loadUserAccount(savedUserId);
+        } else {
+          document.getElementById('authCard').classList.remove('hidden');
+        }
+      }
     }
+
+    function toggleAuthMode() {
+      isSignUpMode = !isSignUpMode;
+      document.getElementById('authTitle').innerText = isSignUpMode ? 'Create Nairaly Account' : 'Nairaly Pro Login';
+      document.getElementById('authSubmitBtn').innerText = isSignUpMode ? 'Register & Open Account' : 'Log In to Terminal';
+      document.getElementById('authToggleText').innerText = isSignUpMode ? 'Already have an account?' : "Don't have an account?";
+      document.getElementById('authToggleBtn').innerText = isSignUpMode ? 'Log In' : 'Sign Up';
+      document.getElementById('authMsg').innerText = '';
+    }
+
+    async function handleAuthSubmit() {
+      const keyInput = document.getElementById('apiKeyInput').value.trim();
+      const email = document.getElementById('authEmail').value.trim();
+      const password = document.getElementById('authPassword').value.trim();
+      const msg = document.getElementById('authMsg');
+
+      let currentKey = localStorage.getItem('nairaly_supabase_key');
+      if (!currentKey && keyInput) {
+        localStorage.setItem('nairaly_supabase_key', keyInput);
+        currentKey = keyInput;
+      }
+
+      if (!currentKey) {
+        msg.innerText = 'Please provide your Supabase API key.';
+        return;
+      }
+      if (!email || !password) {
+        msg.innerText = 'Enter email and password.';
+        return;
+      }
+
+      if (!supabaseClient) {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, currentKey);
+      }
+
+      msg.innerText = isSignUpMode ? 'Creating account...' : 'Logging in...';
+
+      if (isSignUpMode) {
+        const { data: existingUser } = await supabaseClient.from('users').select('*').eq('email', email).single();
+        if (existingUser) {
+          msg.innerText = 'Email already registered. Please log in.';
+          return;
+        }
+
+        const { data: newUser, error: err } = await supabaseClient
+          .from('users')
+          .insert([{ email: email, password_hash: password, kyc_status: 'verified' }])
+          .select()
+          .single();
+
+        if (err || !newUser) {
+          msg.innerText = 'Registration failed: ' + (err?.message || 'Unknown error');
+          return;
+        }
+
+        await supabaseClient
+          .from('trading_accounts')
+          .insert([{ user_id: newUser.id, currency: 'NGN', leverage: 100, balance: 1000000 }]);
+
+        localStorage.setItem('nairaly_user_id', newUser.id);
+        document.getElementById('authCard').classList.add('hidden');
+        await loadUserAccount(newUser.id);
+      } else {
+        const { data: user, error } = await supabaseClient
+          .from('users')
+          .select('*')
+          .eq('email', email)
+          .eq('password_hash', password)
+          .single();
+
+        if (error || !user) {
+          msg.innerText = 'Invalid email or password.';
+          return;
+        }
+
+        localStorage.setItem('nairaly_user_id', user.id);
+        document.getElementById('authCard').classList.add('hidden');
+        await loadUserAccount(user.id);
+      }
+    }
+
+    async function loadUserAccount(userId) {
+      let { data: accounts } = await supabaseClient.from('trading_accounts').select('*').eq('user_id', userId).limit(1);
+      if (accounts && accounts.length > 0) {
+        currentAccount = accounts[0];
+      } else {
+        const { data: newAcc } = await supabaseClient
+          .from('trading_accounts')
+          .insert([{ user_id: userId, currency: 'NGN', leverage: 100, balance: 1000000 }])
+          .select()
+          .single();
+        currentAccount = newAcc;
+      }
+      document.getElementById('mainApp').classList.remove('hidden');
+      document.getElementById('accNumberDisplay').innerText = `ACC #${currentAccount.account_number} • Pro`;
+      await refreshData();
+    }
+    
   </script>
 </body>
 </html>
