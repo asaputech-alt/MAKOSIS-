@@ -647,8 +647,9 @@
         const delta = (Math.random() - 0.49) * inst.step;
         inst.price = Number((inst.price + delta).toFixed(inst.decimals));
 
-        document.getElementById('livePriceDisplay').innerText = inst.price.toLocaleString('en-US', { minimumFractionDigits: inst.decimals });
-
+        const priceInNaira = inst.price * USD_NGN_RATE;
+document.getElementById('livePriceDisplay').innerText = fmtNGN(priceInNaira);
+        
         if (chartCandles.length > 0) {
           const lastCandle = chartCandles[chartCandles.length - 1];
           lastCandle.close = inst.price;
