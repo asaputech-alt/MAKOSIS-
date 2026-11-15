@@ -13,17 +13,15 @@
 </head>
 <body class="min-h-screen flex flex-col">
 
-  <!-- API Key Setup Modal (Shows automatically until you paste your key once) -->
-  <div id="setupModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-[#151a24] border border-slate-700 rounded-xl max-w-md w-full p-6 shadow-2xl">
-      <h2 class="text-lg font-bold text-white mb-1">Connect Your Supabase Database</h2>
-      <p class="text-xs text-slate-400 mb-4">Project: <span class="text-emerald-400 font-mono">tovlcsrjjfmsvfeibvuo.supabase.co</span></p>
-      <label class="block text-xs font-medium text-slate-300 mb-1">Paste Your Supabase Public Anon / Publishable Key</label>
-      <input id="apiKeyInput" type="text" placeholder="eyJ... or sb_publishable_..." class="w-full bg-[#0b0e14] border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white mb-4 focus:outline-none focus:border-emerald-500" />
-      <button onclick="saveApiKey()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2.5 rounded-lg text-sm transition">
-        Connect & Launch Terminal
-      </button>
-    </div>
+  <!-- Direct Setup Card (Appears if no key is saved yet) -->
+  <div id="setupCard" class="max-w-md w-full mx-auto my-auto p-6 bg-[#151a24] border border-slate-700 rounded-xl shadow-2xl hidden">
+    <h2 class="text-lg font-bold text-white mb-1">Connect Your Supabase Database</h2>
+    <p class="text-xs text-slate-400 mb-4">Project: <span class="text-emerald-400 font-mono">tovlcsrjjfmsvfeibvuo.supabase.co</span></p>
+    <label class="block text-xs font-medium text-slate-300 mb-1">Paste Your Supabase Public Anon Key</label>
+    <input id="apiKeyInput" type="text" placeholder="eyJ... or sb_publishable_..." class="w-full bg-[#0b0e14] border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white mb-4 focus:outline-none focus:border-emerald-500" />
+    <button onclick="saveApiKey()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2.5 rounded-lg text-sm transition">
+      Connect & Launch Terminal
+    </button>
   </div>
 
   <!-- Deposit NGN Modal -->
@@ -31,7 +29,7 @@
     <div class="bg-[#151a24] border border-slate-700 rounded-xl max-w-sm w-full p-6">
       <div class="flex justify-between items-center mb-4">
         <h3 class="text-base font-bold text-white">Deposit Nigerian Naira (NGN)</h3>
-        <button onclick="toggleModal('depositModal', false)" class="text-slate-400 hover:text-white">&times;</button>
+        <button onclick="toggleDepositModal(false)" class="text-slate-400 hover:text-white text-xl">&times;</button>
       </div>
       <label class="block text-xs text-slate-400 mb-1">Amount (₦)</label>
       <input id="depositAmount" type="number" value="100000" min="1000" step="1000" class="w-full bg-[#0b0e14] border border-slate-700 rounded-lg px-3 py-2 text-white tabular mb-3" />
@@ -46,173 +44,176 @@
     </div>
   </div>
 
-  <!-- Top Account Metrics Bar -->
-  <header class="bg-[#111620] border-b border-slate-800 px-4 py-3 sticky top-0 z-30">
-    <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-3">
-      <div class="flex items-center gap-2">
-        <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded text-xs font-bold">NGN</span>
-        <div>
-          <h1 class="text-sm font-bold text-white leading-tight">NairaFX Broker</h1>
-          <p id="accNumberDisplay" class="text-[11px] text-slate-400 font-mono">Connecting...</p>
-        </div>
-      </div>
-
-      <div class="flex items-center gap-4 text-xs tabular overflow-x-auto">
-        <div>
-          <span class="text-slate-400 block text-[10px]">BALANCE</span>
-          <span id="balanceDisplay" class="font-bold text-white text-sm">₦0.00</span>
-        </div>
-        <div>
-          <span class="text-slate-400 block text-[10px]">EQUITY</span>
-          <span id="equityDisplay" class="font-bold text-emerald-400 text-sm">₦0.00</span>
-        </div>
-        <div>
-          <span class="text-slate-400 block text-[10px]">FREE MARGIN</span>
-          <span id="freeMarginDisplay" class="font-semibold text-slate-200 text-sm">₦0.00</span>
-        </div>
-        <div>
-          <span class="text-slate-400 block text-[10px]">FX RATE</span>
-          <span class="font-semibold text-amber-400 text-sm">₦1,600/$1</span>
-        </div>
-      </div>
-
-      <div class="flex items-center gap-2">
-        <button onclick="toggleModal('depositModal', true)" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-xs font-semibold">
-          + Deposit ₦
-        </button>
-        <button onclick="resetApiKey()" title="Change API Key" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1.5 rounded-lg text-xs">
-          Key
-        </button>
-      </div>
-    </div>
-  </header>
-
-  <!-- Main Trading Workspace -->
-  <main class="max-w-6xl w-full mx-auto p-4 grid grid-cols-1 lg:grid-cols-3 gap-4 flex-1">
-    
-    <!-- Left 2 Columns: Market Watch + Chart + Positions -->
-    <div class="lg:col-span-2 flex flex-col gap-4">
-      
-      <!-- Instrument Selector & Live Tick Banner -->
-      <div class="bg-[#111620] border border-slate-800 rounded-xl p-4">
-        <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
-          <div class="flex gap-2">
-            <button onclick="selectSymbol('XAUUSD')" id="sym-XAUUSD" class="sym-btn bg-amber-500/20 text-amber-400 border border-amber-500/40 px-3 py-1.5 rounded-lg text-xs font-bold">XAUUSD (Gold)</button>
-            <button onclick="selectSymbol('EURUSD')" id="sym-EURUSD" class="sym-btn bg-slate-800 text-slate-300 px-3 py-1.5 rounded-lg text-xs font-semibold">EURUSD</button>
-            <button onclick="selectSymbol('GBPUSD')" id="sym-GBPUSD" class="sym-btn bg-slate-800 text-slate-300 px-3 py-1.5 rounded-lg text-xs font-semibold">GBPUSD</button>
-          </div>
-          <div class="text-right tabular">
-            <span class="text-[11px] text-slate-400 block">LIVE MARKET PRICE</span>
-            <span id="livePriceDisplay" class="text-xl font-bold text-white">2,650.00</span>
+  <!-- Main App Wrapper -->
+  <div id="mainApp" class="flex flex-col flex-1 hidden">
+    <!-- Top Account Metrics Bar -->
+    <header class="bg-[#111620] border-b border-slate-800 px-4 py-3 sticky top-0 z-30">
+      <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-2">
+          <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded text-xs font-bold">NGN</span>
+          <div>
+            <h1 class="text-sm font-bold text-white leading-tight">NairaFX Broker</h1>
+            <p id="accNumberDisplay" class="text-[11px] text-slate-400 font-mono">Connecting...</p>
           </div>
         </div>
 
-        <!-- Mini Live Price Canvas Chart -->
-        <div class="bg-[#0b0e14] border border-slate-800/80 rounded-lg p-3 h-48 relative flex items-end">
-          <canvas id="priceChart" class="w-full h-full"></canvas>
+        <div class="flex items-center gap-4 text-xs tabular overflow-x-auto">
+          <div>
+            <span class="text-slate-400 block text-[10px]">BALANCE</span>
+            <span id="balanceDisplay" class="font-bold text-white text-sm">₦0.00</span>
+          </div>
+          <div>
+            <span class="text-slate-400 block text-[10px]">EQUITY</span>
+            <span id="equityDisplay" class="font-bold text-emerald-400 text-sm">₦0.00</span>
+          </div>
+          <div>
+            <span class="text-slate-400 block text-[10px]">FREE MARGIN</span>
+            <span id="freeMarginDisplay" class="font-semibold text-slate-200 text-sm">₦0.00</span>
+          </div>
+          <div>
+            <span class="text-slate-400 block text-[10px]">FX RATE</span>
+            <span class="font-semibold text-amber-400 text-sm">₦1,600/$1</span>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button onclick="toggleDepositModal(true)" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-xs font-semibold">
+            + Deposit ₦
+          </button>
+          <button onclick="resetApiKey()" title="Change API Key" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1.5 rounded-lg text-xs">
+            Reset Key
+          </button>
         </div>
       </div>
+    </header>
 
-      <!-- Open Positions & Ledger History -->
-      <div class="bg-[#111620] border border-slate-800 rounded-xl p-4 flex-1">
-        <div class="flex gap-4 border-b border-slate-800 pb-2 mb-3 text-xs font-semibold">
-          <button onclick="switchTab('positions')" id="tab-positions" class="text-emerald-400 border-b-2 border-emerald-400 pb-1">Open Positions (<span id="openCount">0</span>)</button>
-          <button onclick="switchTab('ledger')" id="tab-ledger" class="text-slate-400 hover:text-white pb-1">Naira Ledger History</button>
-        </div>
-
-        <!-- Open Positions Table -->
-        <div id="panel-positions" class="overflow-x-auto">
-          <table class="w-full text-left text-xs tabular">
-            <thead class="text-slate-400 border-b border-slate-800">
-              <tr>
-                <th class="py-2">Symbol</th>
-                <th>Side</th>
-                <th>Lots</th>
-                <th>Entry</th>
-                <th>Margin (₦)</th>
-                <th>Floating P&L</th>
-                <th class="text-right">Action</th>
-              </tr>
-            </thead>
-            <tbody id="positionsBody" class="divide-y divide-slate-800/60">
-              <tr><td colspan="7" class="py-6 text-center text-slate-500">No open positions yet. Place a trade!</td></tr>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- Ledger Table -->
-        <div id="panel-ledger" class="overflow-x-auto hidden">
-          <table class="w-full text-left text-xs tabular">
-            <thead class="text-slate-400 border-b border-slate-800">
-              <tr>
-                <th class="py-2">Type</th>
-                <th>Direction</th>
-                <th>Amount (₦)</th>
-                <th>Reference</th>
-              </tr>
-            </thead>
-            <tbody id="ledgerBody" class="divide-y divide-slate-800/60">
-              <tr><td colspan="4" class="py-6 text-center text-slate-500">No ledger entries yet.</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- Right Column: Order Execution Panel -->
-    <div class="bg-[#111620] border border-slate-800 rounded-xl p-4 h-fit">
-      <h2 class="text-sm font-bold text-white mb-3">New Order (<span id="orderSymbolLabel">XAUUSD</span>)</h2>
+    <!-- Main Trading Workspace -->
+    <main class="max-w-6xl w-full mx-auto p-4 grid grid-cols-1 lg:grid-cols-3 gap-4 flex-1">
       
-      <div class="mb-3">
-        <label class="block text-xs text-slate-400 mb-1">Volume (Lot Size)</label>
-        <input id="lotSizeInput" type="number" value="0.01" min="0.01" step="0.01" oninput="updateMarginPreview()" class="w-full bg-[#0b0e14] border border-slate-700 rounded-lg px-3 py-2 text-white tabular text-sm" />
-        <div class="grid grid-cols-4 gap-1.5 mt-1.5">
-          <button onclick="setLot(0.01)" class="bg-slate-800 hover:bg-slate-700 py-1 rounded text-[11px] tabular">0.01</button>
-          <button onclick="setLot(0.05)" class="bg-slate-800 hover:bg-slate-700 py-1 rounded text-[11px] tabular">0.05</button>
-          <button onclick="setLot(0.10)" class="bg-slate-800 hover:bg-slate-700 py-1 rounded text-[11px] tabular">0.10</button>
-          <button onclick="setLot(0.50)" class="bg-slate-800 hover:bg-slate-700 py-1 rounded text-[11px] tabular">0.50</button>
+      <!-- Left 2 Columns -->
+      <div class="lg:col-span-2 flex flex-col gap-4">
+        
+        <!-- Instrument Selector & Live Tick Banner -->
+        <div class="bg-[#111620] border border-slate-800 rounded-xl p-4">
+          <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+            <div class="flex gap-2">
+              <button onclick="selectSymbol('XAUUSD')" id="sym-XAUUSD" class="sym-btn bg-amber-500/20 text-amber-400 border border-amber-500/40 px-3 py-1.5 rounded-lg text-xs font-bold">XAUUSD (Gold)</button>
+              <button onclick="selectSymbol('EURUSD')" id="sym-EURUSD" class="sym-btn bg-slate-800 text-slate-300 px-3 py-1.5 rounded-lg text-xs font-semibold">EURUSD</button>
+              <button onclick="selectSymbol('GBPUSD')" id="sym-GBPUSD" class="sym-btn bg-slate-800 text-slate-300 px-3 py-1.5 rounded-lg text-xs font-semibold">GBPUSD</button>
+            </div>
+            <div class="text-right tabular">
+              <span class="text-[11px] text-slate-400 block">LIVE MARKET PRICE</span>
+              <span id="livePriceDisplay" class="text-xl font-bold text-white">2,650.00</span>
+            </div>
+          </div>
+
+          <!-- Mini Live Price Canvas Chart -->
+          <div class="bg-[#0b0e14] border border-slate-800/80 rounded-lg p-3 h-48 relative flex items-end">
+            <canvas id="priceChart" class="w-full h-full"></canvas>
+          </div>
+        </div>
+
+        <!-- Open Positions & Ledger History -->
+        <div class="bg-[#111620] border border-slate-800 rounded-xl p-4 flex-1">
+          <div class="flex gap-4 border-b border-slate-800 pb-2 mb-3 text-xs font-semibold">
+            <button onclick="switchTab('positions')" id="tab-positions" class="text-emerald-400 border-b-2 border-emerald-400 pb-1">Open Positions (<span id="openCount">0</span>)</button>
+            <button onclick="switchTab('ledger')" id="tab-ledger" class="text-slate-400 hover:text-white pb-1">Naira Ledger History</button>
+          </div>
+
+          <!-- Open Positions Table -->
+          <div id="panel-positions" class="overflow-x-auto">
+            <table class="w-full text-left text-xs tabular">
+              <thead class="text-slate-400 border-b border-slate-800">
+                <tr>
+                  <th class="py-2">Symbol</th>
+                  <th>Side</th>
+                  <th>Lots</th>
+                  <th>Entry</th>
+                  <th>Margin (₦)</th>
+                  <th>Floating P&L</th>
+                  <th class="text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody id="positionsBody" class="divide-y divide-slate-800/60">
+                <tr><td colspan="7" class="py-6 text-center text-slate-500">No open positions yet. Place a trade!</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Ledger Table -->
+          <div id="panel-ledger" class="overflow-x-auto hidden">
+            <table class="w-full text-left text-xs tabular">
+              <thead class="text-slate-400 border-b border-slate-800">
+                <tr>
+                  <th class="py-2">Type</th>
+                  <th>Direction</th>
+                  <th>Amount (₦)</th>
+                  <th>Reference</th>
+                </tr>
+              </thead>
+              <tbody id="ledgerBody" class="divide-y divide-slate-800/60">
+                <tr><td colspan="4" class="py-6 text-center text-slate-500">No ledger entries yet.</td></tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
-      <div class="grid grid-cols-2 gap-2 mb-4">
-        <div>
-          <label class="block text-[11px] text-slate-400 mb-1">Stop Loss (Optional)</label>
-          <input id="slInput" type="number" step="0.01" placeholder="0.00" class="w-full bg-[#0b0e14] border border-slate-700 rounded-lg px-2.5 py-1.5 text-white tabular text-xs" />
+      <!-- Right Column: Order Execution Panel -->
+      <div class="bg-[#111620] border border-slate-800 rounded-xl p-4 h-fit">
+        <h2 class="text-sm font-bold text-white mb-3">New Order (<span id="orderSymbolLabel">XAUUSD</span>)</h2>
+        
+        <div class="mb-3">
+          <label class="block text-xs text-slate-400 mb-1">Volume (Lot Size)</label>
+          <input id="lotSizeInput" type="number" value="0.01" min="0.01" step="0.01" oninput="updateMarginPreview()" class="w-full bg-[#0b0e14] border border-slate-700 rounded-lg px-3 py-2 text-white tabular text-sm" />
+          <div class="grid grid-cols-4 gap-1.5 mt-1.5">
+            <button onclick="setLot(0.01)" class="bg-slate-800 hover:bg-slate-700 py-1 rounded text-[11px] tabular">0.01</button>
+            <button onclick="setLot(0.05)" class="bg-slate-800 hover:bg-slate-700 py-1 rounded text-[11px] tabular">0.05</button>
+            <button onclick="setLot(0.10)" class="bg-slate-800 hover:bg-slate-700 py-1 rounded text-[11px] tabular">0.10</button>
+            <button onclick="setLot(0.50)" class="bg-slate-800 hover:bg-slate-700 py-1 rounded text-[11px] tabular">0.50</button>
+          </div>
         </div>
-        <div>
-          <label class="block text-[11px] text-slate-400 mb-1">Take Profit (Optional)</label>
-          <input id="tpInput" type="number" step="0.01" placeholder="0.00" class="w-full bg-[#0b0e14] border border-slate-700 rounded-lg px-2.5 py-1.5 text-white tabular text-xs" />
+
+        <div class="grid grid-cols-2 gap-2 mb-4">
+          <div>
+            <label class="block text-[11px] text-slate-400 mb-1">Stop Loss (Optional)</label>
+            <input id="slInput" type="number" step="0.01" placeholder="0.00" class="w-full bg-[#0b0e14] border border-slate-700 rounded-lg px-2.5 py-1.5 text-white tabular text-xs" />
+          </div>
+          <div>
+            <label class="block text-[11px] text-slate-400 mb-1">Take Profit (Optional)</label>
+            <input id="tpInput" type="number" step="0.01" placeholder="0.00" class="w-full bg-[#0b0e14] border border-slate-700 rounded-lg px-2.5 py-1.5 text-white tabular text-xs" />
+          </div>
         </div>
+
+        <!-- Margin & Contract Summary -->
+        <div class="bg-[#0b0e14] border border-slate-800 rounded-lg p-3 mb-4 text-xs space-y-1.5 tabular">
+          <div class="flex justify-between">
+            <span class="text-slate-400">Contract Size:</span>
+            <span id="contractSizePreview" class="text-slate-200">100 oz</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-400">Account Leverage:</span>
+            <span class="text-slate-200">1:100</span>
+          </div>
+          <div class="flex justify-between border-t border-slate-800 pt-1.5 font-semibold">
+            <span class="text-slate-300">Required Margin:</span>
+            <span id="requiredMarginPreview" class="text-amber-400">₦42,400.00</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2.5">
+          <button onclick="placeOrder('SELL')" class="bg-rose-600 hover:bg-rose-500 text-white font-bold py-3 rounded-lg text-xs transition shadow-lg shadow-rose-900/20">
+            SELL MARKET
+          </button>
+          <button onclick="placeOrder('BUY')" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-lg text-xs transition shadow-lg shadow-emerald-900/20">
+            BUY MARKET
+          </button>
+        </div>
+        <p id="statusMsg" class="text-xs text-center mt-3 text-slate-400"></p>
       </div>
 
-      <!-- Margin & Contract Summary -->
-      <div class="bg-[#0b0e14] border border-slate-800 rounded-lg p-3 mb-4 text-xs space-y-1.5 tabular">
-        <div class="flex justify-between">
-          <span class="text-slate-400">Contract Size:</span>
-          <span id="contractSizePreview" class="text-slate-200">100 oz</span>
-        </div>
-        <div class="flex justify-between">
-          <span class="text-slate-400">Account Leverage:</span>
-          <span class="text-slate-200">1:100</span>
-        </div>
-        <div class="flex justify-between border-t border-slate-800 pt-1.5 font-semibold">
-          <span class="text-slate-300">Required Margin:</span>
-          <span id="requiredMarginPreview" class="text-amber-400">₦42,400.00</span>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-2 gap-2.5">
-        <button onclick="placeOrder('SELL')" class="bg-rose-600 hover:bg-rose-500 text-white font-bold py-3 rounded-lg text-xs transition shadow-lg shadow-rose-900/20">
-          SELL MARKET
-        </button>
-        <button onclick="placeOrder('BUY')" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-lg text-xs transition shadow-lg shadow-emerald-900/20">
-          BUY MARKET
-        </button>
-      </div>
-      <p id="statusMsg" class="text-xs text-center mt-3 text-slate-400"></p>
-    </div>
-
-  </main>
+    </main>
+  </div>
 
   <script>
     const SUPABASE_URL = 'https://tovlcsrjjfmsvfeibvuo.supabase.co';
@@ -233,11 +234,10 @@
 
     const fmtNGN = (num) => '₦' + Number(num || 0).toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-    // Initialize App
     window.addEventListener('DOMContentLoaded', () => {
       const savedKey = localStorage.getItem('nairafx_supabase_key');
       if (!savedKey) {
-        toggleModal('setupModal', true);
+        document.getElementById('setupCard').classList.remove('hidden');
       } else {
         initSupabase(savedKey);
       }
@@ -248,23 +248,23 @@
       const key = document.getElementById('apiKeyInput').value.trim();
       if (!key) return alert('Please paste your Supabase public anon key.');
       localStorage.setItem('nairafx_supabase_key', key);
-      toggleModal('setupModal', false);
+      document.getElementById('setupCard').classList.add('hidden');
       initSupabase(key);
     }
 
     function resetApiKey() {
       localStorage.removeItem('nairafx_supabase_key');
-      toggleModal('setupModal', true);
+      location.reload();
     }
 
     async function initSupabase(key) {
       supabaseClient = window.supabase.createClient(SUPABASE_URL, key);
+      document.getElementById('mainApp').classList.remove('hidden');
       await loadOrCreateDemoAccount();
       await refreshData();
     }
 
     async function loadOrCreateDemoAccount() {
-      // Check if an account already exists
       let { data: accounts, error } = await supabaseClient.from('trading_accounts').select('*').limit(1);
       if (error) {
         document.getElementById('accNumberDisplay').innerText = 'API Error: Check Key';
@@ -275,7 +275,6 @@
       if (accounts && accounts.length > 0) {
         currentAccount = accounts[0];
       } else {
-        // Create default demo user + Naira account
         const { data: user } = await supabaseClient
           .from('users')
           .insert([{ email: 'trader@nairafx.ng', password_hash: 'demo_hash_123', kyc_status: 'verified' }])
@@ -323,7 +322,7 @@
       }]);
 
       document.getElementById('depositBtn').innerText = 'Credit Naira Wallet';
-      toggleModal('depositModal', false);
+      toggleDepositModal(false);
       await refreshData();
     }
 
@@ -413,9 +412,4 @@
       });
       const equity = balance + totalFloating;
       const freeMargin = equity - totalMargin;
-      return { balance, equity, freeMargin, totalMargin };
-    }
-
-    function updateMetricsAndTable() {
-      const { balance, equity, freeMargin } = calculateAccountTotals();
-      document.getElementById(
+ 
