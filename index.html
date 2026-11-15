@@ -15,15 +15,40 @@
 <body class="min-h-screen flex flex-col">
 
   <!-- Auth Screen (Login / Sign Up) -->
-  <div id="authCard" class="max-w-md w-full mx-auto my-auto p-6 bg-[#151a24] border border-slate-700 rounded-xl shadow-2xl hidden">
+    <!-- Auth Screen (Login / Sign Up) -->
+  <div id="authCard" class="max-w-md w-full mx-auto p-6 bg-[#151a24] border border-slate-700 rounded-xl shadow-2xl">
     <div class="flex items-center justify-between mb-4">
       <h2 id="authTitle" class="text-lg font-bold text-white">Nairaly Pro Login</h2>
       <span class="text-xs text-emerald-400 font-mono">NGN Broker</span>
     </div>
+
+    <!-- Extra Fields for Sign Up (Hidden by default) -->
+    <div id="extraSignupFields" class="hidden">
+      <label class="block text-xs font-medium text-slate-300 mb-1">Full Name</label>
+      <input id="authFullName" type="text" placeholder="Sodiq Ibrahim" class="w-full bg-[#0b0e14] border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white mb-3 focus:outline-none focus:border-emerald-500" />
+
+      <label class="block text-xs font-medium text-slate-300 mb-1">Phone Number</label>
+      <input id="authPhone" type="text" placeholder="080XXXXXXXX" class="w-full bg-[#0b0e14] border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white mb-3 focus:outline-none focus:border-emerald-500" />
+    </div>
+
+    <label class="block text-xs font-medium text-slate-300 mb-1">Email Address</label>
+    <input id="authEmail" type="email" placeholder="trader@nairaly.ng" class="w-full bg-[#0b0e14] border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white mb-3 focus:outline-none focus:border-emerald-500" />
     
-    const SUPABASE_URL = 'https://tovlcsrjjfmsvfeibvuo.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRvdmxjc3JqamZtc3ZmZWlidnVvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ3NTIyMTUsImV4cCI6MjExMDMyODIxNX0.nm8unTJUqj-v7KdlrJeCyb0NPZ8CUcPznPmJy-K0jS0';
-    
+    <label class="block text-xs font-medium text-slate-300 mb-1">Password</label>
+    <input id="authPassword" type="password" placeholder="••••••••" class="w-full bg-[#0b0e14] border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white mb-4 focus:outline-none focus:border-emerald-500" />
+
+    <button id="authSubmitBtn" onclick="handleAuthSubmit()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2.5 rounded-lg text-sm transition mb-3">
+      Log In to Terminal
+    </button>
+
+    <div class="flex justify-between items-center text-xs text-slate-400">
+      <span id="authToggleText">Don't have an account?</span>
+      <button onclick="toggleAuthMode()" id="authToggleBtn" class="text-emerald-400 hover:underline font-semibold">Sign Up</button>
+    </div>
+
+    <p id="authMsg" class="text-xs text-center mt-3 text-rose-400"></p>
+  </div>
+  
     <label class="block text-xs font-medium text-slate-300 mb-1">Email Address</label>
     <input id="authEmail" type="email" placeholder="trader@nairaly.ng" class="w-full bg-[#0b0e14] border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white mb-3 focus:outline-none focus:border-emerald-500" />
     
