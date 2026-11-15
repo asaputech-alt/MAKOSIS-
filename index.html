@@ -37,25 +37,7 @@
     <input id="authPassword" type="password" placeholder="••••••••" class="w-full bg-[#0b0e14] border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white mb-4 focus:outline-none focus:border-emerald-500" />
 
     <button id="authSubmitBtn" onclick="handleAuthSubmit()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2.5 rounded-lg text-sm transition mb-3">
-      Log In to Terminal
-    </button>
-
-    <div class="flex justify-between items-center text-xs text-slate-400">
-      <span id="authToggleText">Don't have an account?</span>
-      <button onclick="toggleAuthMode()" id="authToggleBtn" class="text-emerald-400 hover:underline font-semibold">Sign Up</button>
-    </div>
-
-    <p id="authMsg" class="text-xs text-center mt-3 text-rose-400"></p>
-  </div>
-  
-    <label class="block text-xs font-medium text-slate-300 mb-1">Email Address</label>
-    <input id="authEmail" type="email" placeholder="trader@nairaly.ng" class="w-full bg-[#0b0e14] border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white mb-3 focus:outline-none focus:border-emerald-500" />
-    
-    <label class="block text-xs font-medium text-slate-300 mb-1">Password</label>
-    <input id="authPassword" type="password" placeholder="••••••••" class="w-full bg-[#0b0e14] border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white mb-4 focus:outline-none focus:border-emerald-500" />
-
-    <button id="authSubmitBtn" onclick="handleAuthSubmit()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2.5 rounded-lg text-sm transition mb-3">
-      Log In to Terminal
+            Log In to Terminal
     </button>
 
     <div class="flex justify-between items-center text-xs text-slate-400">
@@ -715,14 +697,71 @@ document.getElementById('livePriceDisplay').innerText = fmtNGN(priceInNaira);
       }
     }
 
-    function toggleAuthMode() {
-      isSignUpMode = !isSignUpMode;
-      document.getElementById('authTitle').innerText = isSignUpMode ? 'Create Nairaly Account' : 'Nairaly Pro Login';
-      document.getElementById('authSubmitBtn').innerText = isSignUpMode ? 'Register & Open Account' : 'Log In to Terminal';
-      document.getElementById('authToggleText').innerText = isSignUpMode ? 'Already have an account?' : "Don't have an account?";
-      document.getElementById('authToggleBtn').innerText = isSignUpMode ? 'Log In' : 'Sign Up';
-      document.getElementById('authMsg').innerText = '';
-    }
+        async function handleAuthSubmit() {
+      const email = document.getElementById('authEmail').value.trim();
+      const password = document.getElementById('authPassword').value.trim();
+      const msg = document.getElementById('authMsg');
+
+      if (!email || !password) {
+        msg.innerText = 'Enter email and password.';
+        return;
+      }
+
+      msg.innerText = isSignUpMode ? 'Creating account...' : 'Logging in...';
+
+      if (isSignUpMode) {
+        const fullName = document.getElementById('authFullName').value.trim();
+        const phone = document.getElementById('authPhone').value.trim();
+
+        const { data: existingUser } = await supabaseClient.from('users').select('*').eq('email', email).single();
+        if (existingUser) {
+          msg.innerText = 'Email already registered. Please log in.';
+          return;
+        }
+
+        const { data: newUser, error: err } = await supabaseClient
+          .from('users')
+          .insert([{ 
+            email: email, 
+            password_hash: password, 
+            full_name: fullName,
+            phone: phone,
+            kyc_status: 'verified' 
+          }])
+          .select()
+          .single();
+
+        if (err || !newUser) {
+          msg.innerText = 'Registration failed: ' + (err?.message || 'Unknown error');
+          return;
+        }
+
+        await supabaseClient
+          .from('trading_accounts')
+          .insert([{ user_id: newUser.id, currency: 'NGN', leverage: 100, balance: 1000000 }]);
+
+        localStorage.setItem('nairaly_user_id', newUser.id);
+        document.getElementById('authCard').classList.add('hidden');
+        await loadUserAccount(newUser.id);
+      } else {
+        const { data: user, error } = await supabaseClient
+          .from('users')
+          .select('*')
+          .eq('email', email)
+          .eq('password_hash', password)
+          .single();
+
+        if (error || !user) {
+          msg.innerText = 'Invalid email or password.';
+          return;
+        }
+
+        localStorage.setItem('nairaly_user_id', user.id);
+        document.getElementById('authCard').classList.add('hidden');
+        await loadUserAccount(user.id);
+      }
+        }
+    
 
     async function handleAuthSubmit() {
       const keyInput = document.getElementById('apiKeyInput').value.trim();
