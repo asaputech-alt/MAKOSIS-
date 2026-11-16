@@ -14,8 +14,7 @@
 </head>
 <body class="flex flex-col min-h-screen">
     <!-- Auth Screen (Login / Sign Up) -->
-  <div id="authCard" class="max-w-md w-full mx-auto my-auto p-6 bg-[#ffffff] text-slate-900 border border-slate-300 rounded-xl shadow-2xl hidden">
-    <div class="flex items-center justify-between mb-4">
+  <div id="authCard" class="max-w-md w-full mx-auto my-auto p-6 bg-[#ffffff] text-slate-900 border border-slate-300 rounded-xl shadow-2xl">
       <h2 id="authTitle" class="text-lg font-bold text-slate-900">Makosis Pro Login</h2>
       <span class="text-xs text-emerald-600 font-mono bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">₦10k Bonus NGN Broker</span>
     </div>
@@ -863,6 +862,336 @@
             <td class="py-2.5 px-2">${Number(pos.lot_size).toFixed(2)}</td>
             <td class="py-2.5 px-2">$${Number(pos.open_price).toFixed(inst.decimals)}</td>
             <td class="py-2.5 px-2 text-slate-700">$${inst.price.toFixed(inst.decimals)}</td>
+  <script>
+    const SUPABASE_URL = 'https://tovlcsrjjfmsvfeibvuo.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRvdmxjc3JqamZtc3ZmZWlidnVvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ3NTIyMTUsImV4cCI6MjExMDMyODIxNX0.nm8unTJUqj-v7KdlrJeCyb0NPZ8CUcPznPmJy-K0jS0';
+
+    let USD_NGN_RATE = 1600;
+
+    const INSTRUMENTS = {
+      XAUUSD: { name: 'Gold', type: 'Metal', price: 2650.00, contract: 100, leverage: 100, step: 0.45, decimals: 2 },
+      XAGUSD: { name: 'Silver', type: 'Metal', price: 31.50, contract: 5000, leverage: 100, step: 0.04, decimals: 2 },
+      USOIL:  { name: 'WTI Crude Oil', type: 'Energy', price: 70.50, contract: 1000, leverage: 50, step: 0.05, decimals: 2 },
+      UKOIL:  { name: 'Brent Crude Oil', type: 'Energy', price: 74.20, contract: 1000, leverage: 50, step: 0.05, decimals: 2 },
+      EURUSD: { name: 'EUR/USD', type: 'Forex', price: 1.0850, contract: 100000, leverage: 100, step: 0.0002, decimals: 4 },
+      GBPUSD: { name: 'GBP/USD', type: 'Forex', price: 1.2950, contract: 100000, leverage: 100, step: 0.0002, decimals: 4 },
+      BTCUSD: { name: 'Bitcoin', type: 'Crypto', price: 91000.00, contract: 1, leverage: 20, step: 25.00, decimals: 2 },
+      ETHUSD: { name: 'Ethereum', type: 'Crypto', price: 3150.00, contract: 1, leverage: 20, step: 3.50, decimals: 2 },
+      US30:   { name: 'Dow Jones 30', type: 'Index', price: 43800.00, contract: 1, leverage: 50, step: 8.00, decimals: 2 },
+      AAPL:   { name: 'Apple Inc', type: 'Stock', price: 228.00, contract: 10, leverage: 20, step: 0.25, decimals: 2 }
+    };
+
+    let supabaseClient = null;
+    let currentAccount = null;
+    let activeSymbol = 'XAUUSD';
+    let openPositions = [];
+    let tvChart = null;
+    let candleSeries = null;
+    let chartCandles = [];
+    let currentTimeframe = '1m';
+    let isSignUpMode = false;
+
+    const fmtNGN = (num) => {
+      const val = Number(num || 0);
+      const sign = val < 0 ? '-' : '';
+      return sign + '₦' + Math.abs(val).toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    };
+
+    window.addEventListener('DOMContentLoaded', async () => {
+      try {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const savedUserId = localStorage.getItem('makosis_user_id');
+        if (savedUserId && savedUserId.length > 20) {
+          await loadUserAccount(savedUserId);
+        }
+      } catch (e) {
+        console.error('Init error:', e);
+      }
+      fetchLiveExchangeRate();
+      startMarketTick();
+    });
+
+    function toggleAuthMode() {
+      isSignUpMode = !isSignUpMode;
+      document.getElementById('authTitle').innerText = isSignUpMode ? 'Create Makosis Account' : 'Makosis Pro Login';
+      document.getElementById('authSubmitBtn').innerText = isSignUpMode ? 'Register & Open Account (₦10k Bonus)' : 'Log In to Terminal';
+      document.getElementById('authToggleText').innerText = isSignUpMode ? 'Already have an account?' : "Don't have an account?";
+      document.getElementById('authToggleBtn').innerText = isSignUpMode ? 'Log In' : 'Sign Up';
+      document.getElementById('extraSignupFields').classList.toggle('hidden', !isSignUpMode);
+      document.getElementById('authMsg').innerText = '';
+    }
+
+    async function handleAuthSubmit() {
+      const email = document.getElementById('authEmail').value.trim();
+      const password = document.getElementById('authPassword').value.trim();
+      const msg = document.getElementById('authMsg');
+
+      if (!email || !password) {
+        msg.innerText = 'Enter email and password.';
+        return;
+      }
+
+      msg.innerText = isSignUpMode ? 'Creating account & crediting ₦10,000...' : 'Logging in...';
+
+      if (isSignUpMode) {
+        const { data: existingUser } = await supabaseClient.from('users').select('*').eq('email', email).maybeSingle();
+        if (existingUser) {
+          msg.innerText = 'Email already registered. Switch to Log In.';
+          return;
+        }
+
+        // Insert using only the original columns so Supabase never throws a schema cache error
+        const { data: newUser, error: err } = await supabaseClient
+          .from('users')
+          .insert([{ email: email, password_hash: password, kyc_status: 'verified' }])
+          .select()
+          .single();
+
+        if (err || !newUser) {
+          msg.innerText = 'Registration error: ' + (err?.message || 'Check connection');
+          return;
+        }
+
+        await supabaseClient
+          .from('trading_accounts')
+          .insert([{ user_id: newUser.id, currency: 'NGN', leverage: 100, balance: 10000 }]);
+
+        localStorage.setItem('makosis_user_id', newUser.id);
+        await loadUserAccount(newUser.id);
+      } else {
+        const { data: user, error } = await supabaseClient
+          .from('users')
+          .select('*')
+          .eq('email', email)
+          .eq('password_hash', password)
+          .maybeSingle();
+
+        if (error || !user) {
+          msg.innerText = 'Invalid email or password.';
+          return;
+        }
+
+        localStorage.setItem('makosis_user_id', user.id);
+        await loadUserAccount(user.id);
+      }
+    }
+
+    function handleLogout() {
+      localStorage.removeItem('makosis_user_id');
+      location.reload();
+    }
+
+    async function loadUserAccount(userId) {
+      let { data: accounts } = await supabaseClient.from('trading_accounts').select('*').eq('user_id', userId).limit(1);
+      if (accounts && accounts.length > 0) {
+        currentAccount = accounts[0];
+      } else {
+        const { data: newAcc } = await supabaseClient
+          .from('trading_accounts')
+          .insert([{ user_id: userId, currency: 'NGN', leverage: 100, balance: 10000 }])
+          .select()
+          .single();
+        currentAccount = newAcc;
+      }
+
+      if (!currentAccount) {
+        localStorage.removeItem('makosis_user_id');
+        return;
+      }
+
+      document.getElementById('authCard').classList.add('hidden');
+      document.getElementById('mainApp').classList.remove('hidden');
+      document.getElementById('accNumberDisplay').innerText = `ACC #${currentAccount.account_number || currentAccount.id.slice(0, 6)} • Pro`;
+
+      // Initialize chart AFTER mainApp is visible so container width is not 0!
+      initTradingViewChart();
+      updateSymbolUI();
+      await refreshData();
+    }
+
+    function toggleDepositModal(show) {
+      document.getElementById('depositModal').classList.toggle('hidden', !show);
+    }
+
+    async function depositNaira() {
+      if (!currentAccount) return;
+      const amt = parseFloat(document.getElementById('depositAmount').value);
+      if (!amt || amt < 1000) return alert('Minimum deposit is ₦1,000');
+
+      const newBalance = Number(currentAccount.balance) + amt;
+      const { error } = await supabaseClient
+        .from('trading_accounts')
+        .update({ balance: newBalance })
+        .eq('id', currentAccount.id);
+
+      if (!error) {
+        currentAccount.balance = newBalance;
+        toggleDepositModal(false);
+        updateAccountMetrics();
+      }
+    }
+
+    async function fetchLiveExchangeRate() {
+      try {
+        const res = await fetch('https://open.er-api.com/v6/latest/USD');
+        const data = await res.json();
+        if (data && data.rates && data.rates.NGN) {
+          USD_NGN_RATE = Number(data.rates.NGN);
+          document.getElementById('fxRateDisplay').innerText = `₦${USD_NGN_RATE.toFixed(0)}/$`;
+        }
+      } catch (err) {}
+    }
+
+    function initTradingViewChart() {
+      const container = document.getElementById('tvChartContainer');
+      if (!container || typeof LightweightCharts === 'undefined') return;
+      container.innerHTML = '';
+      tvChart = LightweightCharts.createChart(container, {
+        width: container.clientWidth || 340,
+        height: 300,
+        layout: { background: { type: 'solid', color: '#0f172a' }, textColor: '#94a3b8' },
+        grid: { vertLines: { color: '#1e293b' }, horzLines: { color: '#1e293b' } },
+        timeScale: { borderColor: '#334155', timeVisible: true },
+        rightPriceScale: { borderColor: '#334155' }
+      });
+      candleSeries = tvChart.addCandlestickSeries({
+        upColor: '#10b981', downColor: '#f43f5e', borderVisible: false, wickUpColor: '#10b981', wickDownColor: '#f43f5e'
+      });
+      generateInitialCandles(currentTimeframe);
+    }
+
+    function changeSymbol(newSymbol) {
+      activeSymbol = newSymbol;
+      updateSymbolUI();
+      generateInitialCandles(currentTimeframe);
+    }
+
+    function updateSymbolUI() {
+      const inst = INSTRUMENTS[activeSymbol];
+      document.getElementById('assetSpecBadge').innerText = `${inst.type} • Contract ${inst.contract.toLocaleString()} • 1:${inst.leverage} Lev`;
+      document.getElementById('livePriceDisplay').innerText = fmtNGN(inst.price * USD_NGN_RATE);
+      document.getElementById('usdRefDisplay').innerText = `$${inst.price.toFixed(inst.decimals)}`;
+      updateMarginPreview();
+    }
+
+    function adjustLots(delta) {
+      const input = document.getElementById('lotSizeInput');
+      const next = Math.max(0.10, Number((parseFloat(input.value || 0.10) + delta).toFixed(2)));
+      input.value = next;
+      updateMarginPreview();
+    }
+
+    function updateMarginPreview() {
+      const inst = INSTRUMENTS[activeSymbol];
+      const lots = parseFloat(document.getElementById('lotSizeInput').value) || 0.10;
+      const reqMargin = Math.max(100, (lots * inst.contract * inst.price * USD_NGN_RATE) / inst.leverage);
+      document.getElementById('reqMarginPreview').innerText = `Margin: ${fmtNGN(reqMargin)}`;
+    }
+
+    function setTimeframe(tf) {
+      currentTimeframe = tf;
+      document.querySelectorAll('.tf-btn').forEach(b => {
+        b.className = 'tf-btn px-2 py-0.5 rounded bg-slate-200 text-slate-700';
+      });
+      document.getElementById('tf-' + tf).className = 'tf-btn px-2 py-0.5 rounded bg-emerald-600 text-white font-bold';
+      generateInitialCandles(tf);
+    }
+
+    function generateInitialCandles(tf = '1m') {
+      if (!candleSeries) return;
+      const inst = INSTRUMENTS[activeSymbol];
+      const base = inst.price;
+      let intervalSeconds = tf === '5m' ? 300 : tf === '15m' ? 900 : tf === '1h' ? 3600 : 60;
+
+      const now = Math.floor(Date.now() / 1000) - (60 * intervalSeconds);
+      chartCandles = [];
+      let lastClose = base - (inst.step * 8);
+
+      for (let i = 0; i < 60; i++) {
+        const time = now + (i * intervalSeconds);
+        const open = lastClose;
+        const change = (Math.random() - 0.48) * inst.step * 4;
+        const close = Number((open + change).toFixed(inst.decimals));
+        const high = Number((Math.max(open, close) + Math.random() * inst.step * 2).toFixed(inst.decimals));
+        const low = Number((Math.min(open, close) - Math.random() * inst.step * 2).toFixed(inst.decimals));
+        lastClose = close;
+        chartCandles.push({ time, open, high, low, close });
+      }
+      if (chartCandles.length > 0) chartCandles[chartCandles.length - 1].close = base;
+      candleSeries.setData(chartCandles);
+    }
+
+    async function refreshData() {
+      if (!currentAccount) return;
+      const { data } = await supabaseClient
+        .from('positions')
+        .select('*')
+        .eq('account_id', currentAccount.id)
+        .eq('status', 'OPEN')
+        .order('created_at', { ascending: false });
+      openPositions = data || [];
+      updateAccountMetrics();
+    }
+
+    function calculatePositionPnlNGN(pos) {
+      const inst = INSTRUMENTS[pos.symbol];
+      if (!inst) return 0;
+      const currentPrice = inst.price;
+      const diff = pos.side === 'BUY' ? (currentPrice - Number(pos.open_price)) : (Number(pos.open_price) - currentPrice);
+      const usdPnl = diff * Number(pos.lot_size) * Number(pos.contract_size || inst.contract);
+      return usdPnl * USD_NGN_RATE;
+    }
+
+    function updateAccountMetrics() {
+      if (!currentAccount) return;
+      let totalFloatingPnl = 0;
+      let totalMarginUsed = 0;
+
+      openPositions.forEach(pos => {
+        totalFloatingPnl += calculatePositionPnlNGN(pos);
+        totalMarginUsed += Number(pos.margin_used_ngn || 0);
+      });
+
+      const balance = Number(currentAccount.balance);
+      const equity = balance + totalFloatingPnl;
+      const freeMargin = Math.max(0, equity - totalMarginUsed);
+
+      document.getElementById('balanceDisplay').innerText = fmtNGN(balance);
+      document.getElementById('equityDisplay').innerText = fmtNGN(equity);
+      document.getElementById('equityDisplay').className = `font-bold text-sm ${equity >= balance ? 'text-emerald-400' : 'text-rose-400'}`;
+      document.getElementById('freeMarginDisplay').innerText = fmtNGN(freeMargin);
+      document.getElementById('openCountDisplay').innerText = openPositions.length;
+
+      const pnlHeader = document.getElementById('floatingPnlTotal');
+      pnlHeader.innerText = `Floating P&L: ${fmtNGN(totalFloatingPnl)}`;
+      pnlHeader.className = `text-xs font-bold tabular ${totalFloatingPnl >= 0 ? 'text-emerald-600' : 'text-rose-600'}`;
+
+      renderPositionsTable();
+    }
+
+    function renderPositionsTable() {
+      const tbody = document.getElementById('positionsTableBody');
+      if (openPositions.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" class="py-6 text-center text-slate-400">No active trades open. Select an asset above and place an order.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = openPositions.map(pos => {
+        const inst = INSTRUMENTS[pos.symbol] || { price: pos.open_price, decimals: 2 };
+        const pnl = calculatePositionPnlNGN(pos);
+        const pnlColor = pnl >= 0 ? 'text-emerald-600 font-bold' : 'text-rose-600 font-bold';
+        const sideBadge = pos.side === 'BUY'
+          ? '<span class="bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-bold">BUY</span>'
+          : '<span class="bg-rose-100 text-rose-700 px-1.5 py-0.5 rounded font-bold">SELL</span>';
+        const slTpText = `${pos.stop_loss ? '$' + pos.stop_loss : '—'} / ${pos.take_profit ? '$' + pos.take_profit : '—'}`;
+
+        return `
+          <tr class="hover:bg-slate-50 border-b border-slate-100">
+            <td class="py-2.5 px-2 font-bold text-slate-900">${pos.symbol}</td>
+            <td class="py-2.5 px-2">${sideBadge}</td>
+            <td class="py-2.5 px-2">${Number(pos.lot_size).toFixed(2)}</td>
+            <td class="py-2.5 px-2">$${Number(pos.open_price).toFixed(inst.decimals)}</td>
+            <td class="py-2.5 px-2 text-slate-700">$${inst.price.toFixed(inst.decimals)}</td>
             <td class="py-2.5 px-2 text-slate-500 text-[11px]">${slTpText}</td>
             <td class="py-2.5 px-2 ${pnlColor}">${fmtNGN(pnl)}</td>
             <td class="py-2.5 px-2 text-right">
@@ -878,7 +1207,6 @@
     async function placeOrder(side) {
       if (!currentAccount) return;
       const size = Math.max(0.10, parseFloat(document.getElementById('lotSizeInput').value) || 0.10);
-
       const sl = parseFloat(document.getElementById('slInput').value) || null;
       const tp = parseFloat(document.getElementById('tpInput').value) || null;
 
@@ -932,19 +1260,11 @@
       const realizedPnlNGN = calculatePositionPnlNGN(pos);
 
       openPositions = openPositions.filter(p => p.id !== posId);
-
       const newBalance = Number(currentAccount.balance) + realizedPnlNGN;
       currentAccount.balance = newBalance;
 
-      await supabaseClient
-        .from('positions')
-        .update({ status: 'CLOSED', close_price: closePrice, profit_ngn: realizedPnlNGN })
-        .eq('id', posId);
-
-      await supabaseClient
-        .from('trading_accounts')
-        .update({ balance: newBalance })
-        .eq('id', currentAccount.id);
+      await supabaseClient.from('positions').update({ status: 'CLOSED', close_price: closePrice, profit_ngn: realizedPnlNGN }).eq('id', posId);
+      await supabaseClient.from('trading_accounts').update({ balance: newBalance }).eq('id', currentAccount.id);
 
       document.getElementById('statusMsg').innerText = `${reason}: ${pos.symbol} closed (${fmtNGN(realizedPnlNGN)})`;
       updateAccountMetrics();
@@ -959,11 +1279,13 @@
         });
 
         const activeInst = INSTRUMENTS[activeSymbol];
-        document.getElementById('livePriceDisplay').innerText = fmtNGN(activeInst.price * USD_NGN_RATE);
-        document.getElementById('usdRefDisplay').innerText = `$${activeInst.price.toFixed(activeInst.decimals)}`;
-        updateMarginPreview();
+        if (document.getElementById('livePriceDisplay')) {
+          document.getElementById('livePriceDisplay').innerText = fmtNGN(activeInst.price * USD_NGN_RATE);
+          document.getElementById('usdRefDisplay').innerText = `$${activeInst.price.toFixed(activeInst.decimals)}`;
+          updateMarginPreview();
+        }
 
-        if (chartCandles.length > 0) {
+        if (candleSeries && chartCandles.length > 0) {
           const lastCandle = chartCandles[chartCandles.length - 1];
           lastCandle.close = activeInst.price;
           lastCandle.high = Math.max(lastCandle.high, activeInst.price);
@@ -984,10 +1306,9 @@
           }
         });
 
-        if (currentAccount) {
-          updateAccountMetrics();
-        }
+        if (currentAccount) updateAccountMetrics();
       }, 1000);
     }
   </script>
-  
+</body>
+</html>
