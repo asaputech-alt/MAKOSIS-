@@ -3,568 +3,262 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Makosis | Pro Trading Terminal</title>
+  <title>Makosis Trading | Trade Smart, Grow Big</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
   <style>
-    body { background: linear-gradient(135deg, #0b132b 0%, #1c2541 100%); color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; min-height: 100vh; }
-    .tabular { font-variant-numeric: tabular-nums; }
+    body { background-color: #0b0e14; color: #f8fafc; font-family: 'Plus Jakarta Sans', sans-serif; min-height: 100vh; }
+    .tabular { font-variant-numeric: tabular-nums; font-family: 'JetBrains Mono', monospace; }
   </style>
 </head>
-<body class="flex flex-col min-h-screen">
+<body class="flex flex-col min-h-screen pb-16">
     <!-- Auth Screen (Login / Sign Up) -->
-  <div id="authCard" class="max-w-md w-full mx-auto my-auto p-6 bg-[#ffffff] text-slate-900 border border-slate-300 rounded-xl shadow-2xl">
-      <h2 id="authTitle" class="text-lg font-bold text-slate-900">Makosis Pro Login</h2>
-      <span class="text-xs text-emerald-600 font-mono bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">₦10k Bonus NGN Broker</span>
+  <div id="authCard" class="max-w-md w-full mx-auto my-auto p-6 bg-[#151a24] text-slate-100 border border-slate-800 rounded-2xl shadow-2xl m-4">
+    <div class="flex items-center justify-between mb-4">
+      <div>
+        <h2 id="authTitle" class="text-lg font-bold text-white">Makosis Pro Login</h2>
+        <p class="text-[11px] text-amber-400">...Trade Smart, Grow Big</p>
+      </div>
+      <span class="text-xs text-emerald-400 font-mono bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">₦10k Bonus</span>
     </div>
 
     <!-- Extra Fields for Sign Up -->
     <div id="extraSignupFields" class="hidden">
-      <label class="block text-xs font-medium text-slate-700 mb-1">Full Name</label>
-      <input id="authFullName" type="text" placeholder="Sodiq Ibrahim" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 mb-3 focus:outline-none focus:border-emerald-600" />
+      <label class="block text-xs font-medium text-slate-400 mb-1">Full Name</label>
+      <input id="authFullName" type="text" placeholder="Sodiq Ibrahim" class="w-full bg-[#0b0e14] border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white mb-3 focus:outline-none focus:border-amber-400" />
 
-      <label class="block text-xs font-medium text-slate-700 mb-1">Phone Number</label>
-      <input id="authPhone" type="text" placeholder="080XXXXXXXX" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 mb-3 focus:outline-none focus:border-emerald-600" />
+      <label class="block text-xs font-medium text-slate-400 mb-1">Phone Number</label>
+      <input id="authPhone" type="text" placeholder="080XXXXXXXX" class="w-full bg-[#0b0e14] border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white mb-3 focus:outline-none focus:border-amber-400" />
     </div>
 
-    <label class="block text-xs font-medium text-slate-700 mb-1">Email Address</label>
-    <input id="authEmail" type="email" placeholder="trader@makosis.ng" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 mb-3 focus:outline-none focus:border-emerald-600" />
+    <label class="block text-xs font-medium text-slate-400 mb-1">Email Address</label>
+    <input id="authEmail" type="email" placeholder="trader@makosis.ng" class="w-full bg-[#0b0e14] border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white mb-3 focus:outline-none focus:border-amber-400" />
     
-    <label class="block text-xs font-medium text-slate-700 mb-1">Password</label>
-    <input id="authPassword" type="password" placeholder="••••••••" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2.5 text-sm text-slate-900 mb-4 focus:outline-none focus:border-emerald-600" />
+    <label class="block text-xs font-medium text-slate-400 mb-1">Password</label>
+    <input id="authPassword" type="password" placeholder="••••••••" class="w-full bg-[#0b0e14] border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white mb-5 focus:outline-none focus:border-amber-400" />
 
-    <button id="authSubmitBtn" onclick="handleAuthSubmit()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2.5 rounded-lg text-sm transition mb-3 shadow-md">
+    <button id="authSubmitBtn" onclick="handleAuthSubmit()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-3 rounded-xl text-sm transition mb-3 shadow-lg shadow-amber-500/20">
       Log In to Terminal
     </button>
 
-    <div class="flex justify-between items-center text-xs text-slate-600">
+    <div class="flex justify-between items-center text-xs text-slate-400">
       <span id="authToggleText">Don't have an account?</span>
-      <button onclick="toggleAuthMode()" id="authToggleBtn" class="text-emerald-600 hover:underline font-semibold">Sign Up</button>
+      <button onclick="toggleAuthMode()" id="authToggleBtn" class="text-amber-400 hover:underline font-semibold">Sign Up</button>
     </div>
 
-    <p id="authMsg" class="text-xs text-center mt-3 text-rose-600 font-medium"></p>
+    <p id="authMsg" class="text-xs text-center mt-3 text-rose-400 font-medium"></p>
   </div>
 
   <!-- Naira Deposit Modal -->
-  <div id="depositModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-40 flex items-center justify-center p-4 hidden">
-    <div class="bg-white text-slate-900 border border-slate-300 rounded-xl max-w-sm w-full p-6 shadow-2xl">
+  <div id="depositModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-[#151a24] text-slate-100 border border-slate-800 rounded-2xl max-w-sm w-full p-6 shadow-2xl">
       <div class="flex justify-between items-center mb-4">
-        <h3 class="text-base font-bold text-slate-900">Deposit Nigerian Naira (₦)</h3>
-        <button onclick="toggleDepositModal(false)" class="text-slate-500 hover:text-slate-900 text-xl font-bold">&times;</button>
+        <h3 class="text-base font-bold text-white">Fund Wallet (₦)</h3>
+        <button onclick="toggleDepositModal(false)" class="text-slate-400 hover:text-white text-xl font-bold">&times;</button>
       </div>
-      <label class="block text-xs text-slate-600 mb-1">Amount (₦)</label>
-      <input id="depositAmount" type="number" value="10000" min="1000" step="1000" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-slate-900 tabular text-sm mb-3" />
-      <div class="grid grid-cols-3 gap-2 mb-4">
-        <button onclick="document.getElementById('depositAmount').value=5000" class="bg-slate-100 hover:bg-slate-200 text-slate-800 py-1.5 rounded text-xs font-semibold">₦5k</button>
-        <button onclick="document.getElementById('depositAmount').value=10000" class="bg-slate-100 hover:bg-slate-200 text-slate-800 py-1.5 rounded text-xs font-semibold">₦10k</button>
-        <button onclick="document.getElementById('depositAmount').value=50000" class="bg-slate-100 hover:bg-slate-200 text-slate-800 py-1.5 rounded text-xs font-semibold">₦50k</button>
+      <label class="block text-xs text-slate-400 mb-1">Amount (₦)</label>
+      <input id="depositAmount" type="number" value="50000" min="1000" step="1000" class="w-full bg-[#0b0e14] border border-slate-700 rounded-xl px-3 py-2.5 text-white tabular text-sm mb-3 focus:outline-none focus:border-amber-400" />
+      <div class="grid grid-cols-3 gap-2 mb-5">
+        <button onclick="document.getElementById('depositAmount').value=10000" class="bg-slate-800 hover:bg-slate-700 text-slate-200 py-2 rounded-lg text-xs font-semibold">₦10k</button>
+        <button onclick="document.getElementById('depositAmount').value=50000" class="bg-slate-800 hover:bg-slate-700 text-slate-200 py-2 rounded-lg text-xs font-semibold">₦50k</button>
+        <button onclick="document.getElementById('depositAmount').value=200000" class="bg-slate-800 hover:bg-slate-700 text-slate-200 py-2 rounded-lg text-xs font-semibold">₦200k</button>
       </div>
-      <button id="depositBtn" onclick="depositNaira()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2.5 rounded-lg text-sm shadow">
-        Credit Naira Wallet
+      <button onclick="depositNaira()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-3 rounded-xl text-sm shadow-lg shadow-amber-500/20">
+        Proceed to Fund Wallet
       </button>
     </div>
   </div>
-  <!-- Main Trading Terminal -->
-  <div id="mainApp" class="flex flex-col flex-1 hidden">
-    <!-- Top Account Header -->
-    <header class="bg-[#0b132b]/90 border-b border-[#1c2541] px-4 py-3 sticky top-0 z-30 backdrop-blur">
-      <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-3">
-        <div class="flex items-center gap-2">
-          <span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 px-2 py-0.5 rounded text-xs font-bold">NGN LIVE</span>
-          <div>
-            <h1 class="text-sm font-bold text-white leading-tight">Makosis Pro Terminal</h1>
-            <p id="accNumberDisplay" class="text-[11px] text-slate-300 font-mono">Loading Account...</p>
-          </div>
+    <!-- Main Trading Terminal -->
+  <div id="mainApp" class="flex flex-col flex-1 hidden max-w-md w-full mx-auto">
+    <!-- Top Header Bar -->
+    <header class="flex items-center justify-between px-4 py-3 bg-[#0b0e14] border-b border-slate-800/80 sticky top-0 z-30">
+      <div class="flex items-center gap-2">
+        <!-- Brand Logo SVG -->
+        <svg class="w-8 h-8" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 32L14 20L22 26L36 8" stroke="#F59E0B" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M28 8H36V16" stroke="#F59E0B" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M4 36H36" stroke="#F59E0B" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <div>
+          <h1 class="text-base font-extrabold tracking-wider text-white">MAKOSIS</h1>
+          <p class="text-[9px] font-bold uppercase tracking-widest text-amber-400">T R A D I N G</p>
         </div>
-
-        <div class="flex items-center gap-4 text-xs tabular overflow-x-auto">
-          <div>
-            <span class="text-slate-400 block text-[10px]">BALANCE</span>
-            <span id="balanceDisplay" class="font-bold text-white text-sm">₦0.00</span>
-          </div>
-          <div>
-            <span class="text-slate-400 block text-[10px]">EQUITY</span>
-            <span id="equityDisplay" class="font-bold text-emerald-400 text-sm">₦0.00</span>
-          </div>
-          <div>
-            <span class="text-slate-400 block text-[10px]">FREE MARGIN</span>
-            <span id="freeMarginDisplay" class="font-semibold text-slate-200 text-sm">₦0.00</span>
-          </div>
-          <div class="hidden sm:block">
-            <span class="text-slate-400 block text-[10px]">FX RATE</span>
-            <span id="fxRateDisplay" class="font-mono text-amber-400 text-xs">₦1,600/$</span>
-          </div>
-          <button onclick="toggleDepositModal(true)" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg font-semibold text-xs shadow">
-            + Deposit
-          </button>
-          <button onclick="handleLogout()" class="text-rose-300 hover:underline text-xs font-semibold">
-            Logout
-          </button>
-        </div>
+      </div>
+      <p class="text-[10px] text-slate-400 italic font-medium hidden sm:block">...Trade Smart, Grow Big</p>
+      
+      <div class="flex items-center gap-3">
+        <!-- Notification Bell -->
+        <button class="relative p-2 bg-[#151a24] border border-slate-800 rounded-full text-slate-300 hover:text-white">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+          <span class="absolute top-1 right-1 w-2 h-2 bg-rose-500 rounded-full"></span>
+        </button>
+        <!-- User Avatar Profile -->
+        <button onclick="handleLogout()" class="p-2 bg-amber-500/10 border border-amber-500/30 rounded-full text-amber-400 hover:bg-amber-500/20">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+        </button>
       </div>
     </header>
 
-    <!-- Chart & Order Execution Grid -->
-    <main class="max-w-6xl w-full mx-auto p-4 grid grid-cols-1 lg:grid-cols-3 gap-4 flex-1">
-      
-      <!-- Chart Panel -->
-      <div class="lg:col-span-2 bg-[#ffffff] text-slate-900 p-4 rounded-xl border border-slate-300 shadow-xl flex flex-col">
-        <div class="flex flex-wrap justify-between items-center gap-2 mb-3">
-          <!-- 5 Core Asset Categories Selector -->
-          <select id="symbolSelector" onchange="changeSymbol(this.value)" class="bg-slate-100 border border-slate-300 text-slate-900 font-bold text-xs rounded-lg px-3 py-2 focus:outline-none focus:border-emerald-600">
-            <optgroup label="1. Metals">
-              <option value="XAUUSD" selected>XAUUSD — Gold ($2,650)</option>
-              <option value="XAGUSD">XAGUSD — Silver ($31.50)</option>
-            </optgroup>
-            <optgroup label="2. Energies">
-              <option value="USOIL">USOIL — WTI Crude Oil ($70.50)</option>
-              <option value="UKOIL">UKOIL — Brent Crude ($74.20)</option>
-            </optgroup>
-            <optgroup label="3. Forex">
-              <option value="EURUSD">EURUSD — Euro / USD (1.0850)</option>
-              <option value="GBPUSD">GBPUSD — British Pound / USD (1.2950)</option>
-            </optgroup>
-            <optgroup label="4. Crypto Coins">
-              <option value="BTCUSD">BTCUSD — Bitcoin ($91,000)</option>
-              <option value="ETHUSD">ETHUSD — Ethereum ($3,150)</option>
-            </optgroup>
-            <optgroup label="5. Indices & Stocks">
-              <option value="US30">US30 — Dow Jones 30</option>
-              <option value="AAPL">AAPL — Apple Inc Stock</option>
-            </optgroup>
-          </select>
-
-          <div class="text-right tabular">
-            <span id="livePriceDisplay" class="font-mono text-emerald-600 font-bold text-base block">₦0.00</span>
-            <span id="usdRefDisplay" class="text-[11px] text-slate-500 font-mono">$0.00</span>
-          </div>
-        </div>
-
-        <!-- Timeframe Bar -->
-        <div class="flex items-center justify-between mb-2 bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-300 text-xs">
-          <span id="assetSpecBadge" class="text-slate-600 text-[11px]">Metal • 1:100 Lev</span>
-          <div class="flex gap-1">
-            <button onclick="setTimeframe('1m')" id="tf-1m" class="tf-btn px-2 py-0.5 rounded bg-emerald-600 text-white font-bold">1M</button>
-            <button onclick="setTimeframe('5m')" id="tf-5m" class="tf-btn px-2 py-0.5 rounded bg-slate-200 text-slate-700">5M</button>
-            <button onclick="setTimeframe('15m')" id="tf-15m" class="tf-btn px-2 py-0.5 rounded bg-slate-200 text-slate-700">15M</button>
-            <button onclick="setTimeframe('1h')" id="tf-1h" class="tf-btn px-2 py-0.5 rounded bg-slate-200 text-slate-700">1H</button>
-          </div>
-        </div>
-
-        <!-- TradingView Candlestick Container -->
-        <div id="tvChartContainer" class="w-full h-72 rounded-lg overflow-hidden bg-slate-900 border border-slate-800"></div>
-      </div>
-            <!-- Order Execution Ticket -->
-      <div class="bg-[#ffffff] text-slate-900 p-4 rounded-xl border border-slate-300 shadow-xl flex flex-col justify-between">
-        <div>
-          <div class="flex justify-between items-center mb-3">
-            <h3 class="font-bold text-sm text-slate-900">Market Execution</h3>
-            <span id="reqMarginPreview" class="text-[11px] text-amber-700 font-mono tabular font-semibold">Margin: ₦0.00</span>
-          </div>
-
-          <label class="block text-[11px] text-slate-600 mb-1">Volume (Lots - Min 0.10)</label>
-          <div class="flex gap-1 mb-3">
-            <button onclick="adjustLots(-0.05)" class="bg-slate-200 hover:bg-slate-300 px-3 rounded-lg text-sm font-bold text-slate-800">-</button>
-            <input id="lotSizeInput" oninput="updateMarginPreview()" type="number" value="0.10" step="0.01" min="0.10" class="w-full text-center bg-slate-50 border border-slate-300 rounded-lg px-2 py-2 text-slate-900 tabular text-sm font-bold" />
-            <button onclick="adjustLots(0.05)" class="bg-slate-200 hover:bg-slate-300 px-3 rounded-lg text-sm font-bold text-slate-800">+</button>
-          </div>
-
-          <!-- Stop Loss & Take Profit Inputs -->
-          <div class="grid grid-cols-2 gap-2 mb-3">
-            <div>
-              <label class="block text-[11px] text-slate-600 mb-1">Stop Loss ($)</label>
-              <input id="slInput" type="number" step="0.01" placeholder="Optional" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-2 text-slate-900 tabular text-xs" />
+    <div class="p-4 space-y-4 flex-1">
+      <!-- Wallet Balance Card -->
+      <div class="bg-gradient-to-br from-[#151a24] to-[#1e2536] border border-slate-800 rounded-2xl p-4 shadow-xl relative overflow-hidden">
+        <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-amber-500/5 rounded-full blur-xl"></div>
+        <div class="flex justify-between items-start mb-2">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
             </div>
-            <div>
-              <label class="block text-[11px] text-slate-600 mb-1">Take Profit ($)</label>
-              <input id="tpInput" type="number" step="0.01" placeholder="Optional" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-2 text-slate-900 tabular text-xs" />
+            <span class="text-xs font-medium text-slate-400">Wallet Balance</span>
+          </div>
+          <button onclick="toggleDepositModal(true)" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs shadow-md shadow-amber-500/20 transition">
+            Fund Wallet
+          </button>
+        </div>
+        <div class="tabular">
+          <h2 id="balanceDisplay" class="text-2xl font-extrabold text-white tracking-tight">₦0.00</h2>
+          <div class="flex items-center gap-2 mt-1">
+            <span id="equityDisplay" class="text-xs font-semibold text-emerald-400">+₦0.00 (0.00%)</span>
+            <span class="text-[10px] text-slate-500 font-mono" id="accNumberDisplay">ACC #...</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Action Navigation Icons (Trade, MT5 Robot, Portfolio, History) -->
+      <div class="grid grid-cols-4 gap-2">
+        <div class="bg-[#151a24] border border-slate-800/80 rounded-2xl p-3 text-center flex flex-col items-center justify-center gap-1.5 shadow-sm">
+          <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path></svg>
+          </div>
+          <span class="text-[11px] font-semibold text-slate-200">Trade</span>
+        </div>
+        <div class="bg-[#151a24] border border-slate-800/80 rounded-2xl p-3 text-center flex flex-col items-center justify-center gap-1.5 shadow-sm opacity-90">
+          <div class="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+          </div>
+          <span class="text-[11px] font-semibold text-slate-200">MT5 Robot</span>
+        </div>
+        <div class="bg-[#151a24] border border-slate-800/80 rounded-2xl p-3 text-center flex flex-col items-center justify-center gap-1.5 shadow-sm">
+          <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"></path></svg>
+          </div>
+          <span class="text-[11px] font-semibold text-slate-200">Portfolio</span>
+        </div>
+        <div class="bg-[#151a24] border border-slate-800/80 rounded-2xl p-3 text-center flex flex-col items-center justify-center gap-1.5 shadow-sm">
+          <div class="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          </div>
+          <span class="text-[11px] font-semibold text-slate-200">History</span>
+        </div>
             </div>
-          </div>
-        </div>
-
-        <div>
-          <div class="grid grid-cols-2 gap-2 mt-2">
-            <button onclick="placeOrder('SELL')" class="bg-rose-600 hover:bg-rose-500 py-3 rounded-lg font-bold text-xs text-white transition shadow-md">
-              SELL / SHORT
-            </button>
-            <button onclick="placeOrder('BUY')" class="bg-emerald-600 hover:bg-emerald-500 py-3 rounded-lg font-bold text-xs text-white transition shadow-md">
-              BUY / LONG
-            </button>
-          </div>
-          <p id="statusMsg" class="text-[11px] text-center text-slate-600 mt-2 h-4 font-medium"></p>
-        </div>
-      </div>
-
-      <!-- Live Open Positions Panel -->
-      <div class="lg:col-span-3 bg-[#ffffff] text-slate-900 p-4 rounded-xl border border-slate-300 shadow-xl">
-        <div class="flex justify-between items-center mb-3">
-          <h3 class="font-bold text-sm text-slate-900">Open Positions (<span id="openCountDisplay">0</span>)</h3>
-          <span id="floatingPnlTotal" class="text-xs font-bold tabular text-slate-600">Floating P&L: ₦0.00</span>
-        </div>
-
-        <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse text-xs">
-            <thead>
-              <tr class="border-b border-slate-200 text-slate-500 text-[11px]">
-                <th class="py-2 px-2">Symbol</th>
-                <th class="py-2 px-2">Side</th>
-                <th class="py-2 px-2">Lots</th>
-                <th class="py-2 px-2">Entry ($)</th>
-                <th class="py-2 px-2">Current ($)</th>
-                <th class="py-2 px-2">SL / TP</th>
-                <th class="py-2 px-2">Profit (₦)</th>
-                <th class="py-2 px-2 text-right">Action</th>
-              </tr>
-            </thead>
-            <tbody id="positionsTableBody" class="divide-y divide-slate-100 tabular">
-              <tr>
-                <td colspan="8" class="py-6 text-center text-slate-400">No active trades open. Select an asset above and place an order.</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-    </main>
-  </div>
-    <script>
-    const SUPABASE_URL = 'https://tovlcsrjjfmsvfeibvuo.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRvdmxjc3JqamZtc3ZmZWlidnVvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ3NTIyMTUsImV4cCI6MjExMDMyODIxNX0.nm8unTJUqj-v7KdlrJeCyb0NPZ8CUcPznPmJy-K0jS0';
-
-    let USD_NGN_RATE = 1600;
-
-    const INSTRUMENTS = {
-      XAUUSD: { name: 'Gold', type: 'Metal', price: 2650.00, contract: 100, leverage: 100, step: 0.45, decimals: 2 },
-      XAGUSD: { name: 'Silver', type: 'Metal', price: 31.50, contract: 5000, leverage: 100, step: 0.04, decimals: 2 },
-      USOIL:  { name: 'WTI Crude Oil', type: 'Energy', price: 70.50, contract: 1000, leverage: 50, step: 0.05, decimals: 2 },
-      UKOIL:  { name: 'Brent Crude Oil', type: 'Energy', price: 74.20, contract: 1000, leverage: 50, step: 0.05, decimals: 2 },
-      EURUSD: { name: 'EUR/USD', type: 'Forex', price: 1.0850, contract: 100000, leverage: 100, step: 0.0002, decimals: 4 },
-      GBPUSD: { name: 'GBP/USD', type: 'Forex', price: 1.2950, contract: 100000, leverage: 100, step: 0.0002, decimals: 4 },
-      BTCUSD: { name: 'Bitcoin', type: 'Crypto', price: 91000.00, contract: 1, leverage: 20, step: 25.00, decimals: 2 },
-      ETHUSD: { name: 'Ethereum', type: 'Crypto', price: 3150.00, contract: 1, leverage: 20, step: 3.50, decimals: 2 },
-      US30:   { name: 'Dow Jones 30', type: 'Index', price: 43800.00, contract: 1, leverage: 50, step: 8.00, decimals: 2 },
-      AAPL:   { name: 'Apple Inc', type: 'Stock', price: 228.00, contract: 10, leverage: 20, step: 0.25, decimals: 2 }
-    };
-
-    let supabaseClient = null;
-    let currentAccount = null;
-    let activeSymbol = 'XAUUSD';
-    let openPositions = [];
-    let tvChart = null;
-    let candleSeries = null;
-    let chartCandles = [];
-    let currentTimeframe = '1m';
-    let isSignUpMode = false;
-
-    const fmtNGN = (num) => {
-      const val = Number(num || 0);
-      const sign = val < 0 ? '-' : '';
-      return sign + '₦' + Math.abs(val).toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    };
-
-    window.addEventListener('DOMContentLoaded', async () => {
-      await fetchLiveExchangeRate();
-      initTradingViewChart();
-      updateSymbolUI();
-      checkAuthSession();
-      startMarketTick();
-    });
-
-    function checkAuthSession() {
-      supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-      const savedUserId = localStorage.getItem('makosis_user_id');
-      if (savedUserId) {
-        loadUserAccount(savedUserId);
-      } else {
-        document.getElementById('authCard').classList.remove('hidden');
-      }
-    }
-
-    function toggleAuthMode() {
-      isSignUpMode = !isSignUpMode;
-      document.getElementById('authTitle').innerText = isSignUpMode ? 'Create Makosis Account' : 'Makosis Pro Login';
-      document.getElementById('authSubmitBtn').innerText = isSignUpMode ? 'Register & Open Account (₦10k Bonus)' : 'Log In to Terminal';
-      document.getElementById('authToggleText').innerText = isSignUpMode ? 'Already have an account?' : "Don't have an account?";
-      document.getElementById('authToggleBtn').innerText = isSignUpMode ? 'Log In' : 'Sign Up';
-      document.getElementById('extraSignupFields').classList.toggle('hidden', !isSignUpMode);
-      document.getElementById('authMsg').innerText = '';
-    }
-
-    async function handleAuthSubmit() {
-      const email = document.getElementById('authEmail').value.trim();
-      const password = document.getElementById('authPassword').value.trim();
-      const msg = document.getElementById('authMsg');
-
-      if (!email || !password) {
-        msg.innerText = 'Enter email and password.';
-        return;
-      }
-
-      msg.innerText = isSignUpMode ? 'Creating account & crediting ₦10,000...' : 'Logging in...';
-
-      if (isSignUpMode) {
-        const fullName = document.getElementById('authFullName').value.trim();
-        const phone = document.getElementById('authPhone').value.trim();
-
-        const { data: existingUser } = await supabaseClient.from('users').select('*').eq('email', email).single();
-        if (existingUser) {
-          msg.innerText = 'Email already registered. Please log in.';
-          return;
-        }
-
-        const { data: newUser, error: err } = await supabaseClient
-          .from('users')
-          .insert([{ email: email, password_hash: password, full_name: fullName, phone: phone, kyc_status: 'verified' }])
-          .select()
-          .single();
-
-        if (err || !newUser) {
-          msg.innerText = 'Registration failed: ' + (err?.message || 'Unknown error');
-          return;
-        }
-
-        // ₦10,000 Starting automatic balance credit
-        await supabaseClient
-          .from('trading_accounts')
-          .insert([{ user_id: newUser.id, currency: 'NGN', leverage: 100, balance: 10000 }]);
-
-        localStorage.setItem('makosis_user_id', newUser.id);
-        document.getElementById('authCard').classList.add('hidden');
-        await loadUserAccount(newUser.id);
-      } else {
-        const { data: user, error } = await supabaseClient
-          .from('users')
-          .select('*')
-          .eq('email', email)
-          .eq('password_hash', password)
-          .single();
-
-        if (error || !user) {
-          msg.innerText = 'Invalid email or password.';
-          return;
-        }
-
-        localStorage.setItem('makosis_user_id', user.id);
-        document.getElementById('authCard').classList.add('hidden');
-        await loadUserAccount(user.id);
-      }
-    }
-
-    function handleLogout() {
-      localStorage.removeItem('makosis_user_id');
-      location.reload();
-    }
-
-    async function loadUserAccount(userId) {
-      let { data: accounts } = await supabaseClient.from('trading_accounts').select('*').eq('user_id', userId).limit(1);
-      if (accounts && accounts.length > 0) {
-        currentAccount = accounts[0];
-      } else {
-        const { data: newAcc } = await supabaseClient
-          .from('trading_accounts')
-          .insert([{ user_id: userId, currency: 'NGN', leverage: 100, balance: 10000 }])
-          .select()
-          .single();
-        currentAccount = newAcc;
-      }
-      document.getElementById('mainApp').classList.remove('hidden');
-      document.getElementById('accNumberDisplay').innerText = `ACC #${currentAccount.account_number || currentAccount.id.slice(0, 6)} • Pro`;
-      await refreshData();
-    }
-
-    function toggleDepositModal(show) {
-      document.getElementById('depositModal').classList.toggle('hidden', !show);
-    }
-
-    async function depositNaira() {
-      if (!currentAccount) return;
-      const amt = parseFloat(document.getElementById('depositAmount').value);
-      if (!amt || amt < 1000) return alert('Minimum deposit is ₦1,000');
-
-      const newBalance = Number(currentAccount.balance) + amt;
-      const { error } = await supabaseClient
-        .from('trading_accounts')
-        .update({ balance: newBalance })
-        .eq('id', currentAccount.id);
-
-      if (!error) {
-        currentAccount.balance = newBalance;
-        toggleDepositModal(false);
-        updateAccountMetrics();
-      }
-    }
-
-    async function fetchLiveExchangeRate() {
-      try {
-        const res = await fetch('https://open.er-api.com/v6/latest/USD');
-        const data = await res.json();
-        if (data && data.rates && data.rates.NGN) {
-          USD_NGN_RATE = Number(data.rates.NGN);
-          document.getElementById('fxRateDisplay').innerText = `₦${USD_NGN_RATE.toFixed(0)}/$`;
-        }
-      } catch (err) {
-        console.warn('Using fallback FX rate');
-      }
-    }
-
-    function initTradingViewChart() {
-      const container = document.getElementById('tvChartContainer');
-      container.innerHTML = '';
-      tvChart = LightweightCharts.createChart(container, {
-        width: container.clientWidth,
-        height: container.clientHeight,
-        layout: { background: { type: 'solid', color: '#0f172a' }, textColor: '#94a3b8' },
-        grid: { vertLines: { color: '#1e293b' }, horzLines: { color: '#1e293b' } },
-        timeScale: { borderColor: '#334155', timeVisible: true },
-        rightPriceScale: { borderColor: '#334155' }
-      });
-      candleSeries = tvChart.addCandlestickSeries({
-        upColor: '#10b981', downColor: '#f43f5e', borderVisible: false, wickUpColor: '#10b981', wickDownColor: '#f43f5e'
-      });
-      generateInitialCandles(currentTimeframe);
-    }
-
-    function changeSymbol(newSymbol) {
-      activeSymbol = newSymbol;
-      updateSymbolUI();
-      generateInitialCandles(currentTimeframe);
-    }
-
-    function updateSymbolUI() {
-      const inst = INSTRUMENTS[activeSymbol];
-      document.getElementById('assetSpecBadge').innerText = `${inst.type} • Contract ${inst.contract.toLocaleString()} • 1:${inst.leverage} Lev`;
-      document.getElementById('livePriceDisplay').innerText = fmtNGN(inst.price * USD_NGN_RATE);
-      document.getElementById('usdRefDisplay').innerText = `$${inst.price.toFixed(inst.decimals)}`;
-      updateMarginPreview();
-    }
-
-    function adjustLots(delta) {
-      const input = document.getElementById('lotSizeInput');
-      const next = Math.max(0.10, Number((parseFloat(input.value || 0.10) + delta).toFixed(2)));
-      input.value = next;
-      updateMarginPreview();
-    }
-
-    function updateMarginPreview() {
-      const inst = INSTRUMENTS[activeSymbol];
-      const lots = parseFloat(document.getElementById('lotSizeInput').value) || 0.10;
-      // 0.1 lot calibrated to minimum ~₦100 equivalent baseline scaling
-      const reqMargin = Math.max(100, (lots * inst.contract * inst.price * USD_NGN_RATE) / inst.leverage);
-      document.getElementById('reqMarginPreview').innerText = `Margin: ${fmtNGN(reqMargin)}`;
-    }
-
-    function setTimeframe(tf) {
-      currentTimeframe = tf;
-      document.querySelectorAll('.tf-btn').forEach(b => {
-        b.className = 'tf-btn px-2 py-0.5 rounded bg-slate-200 text-slate-700';
-      });
-      document.getElementById('tf-' + tf).className = 'tf-btn px-2 py-0.5 rounded bg-emerald-600 text-white font-bold';
-      generateInitialCandles(tf);
-    }
-
-    function generateInitialCandles(tf = '1m') {
-      const inst = INSTRUMENTS[activeSymbol];
-      const base = inst.price;
-      let intervalSeconds = tf === '5m' ? 300 : tf === '15m' ? 900 : tf === '1h' ? 3600 : 60;
-
-      const now = Math.floor(Date.now() / 1000) - (60 * intervalSeconds);
-      chartCandles = [];
-      let lastClose = base - (inst.step * 8);
-
-      for (let i = 0; i < 60; i++) {
-        const time = now + (i * intervalSeconds);
-        const open = lastClose;
-        const change = (Math.random() - 0.48) * inst.step * 4;
-        const close = Number((open + change).toFixed(inst.decimals));
-        const high = Number((Math.max(open, close) + Math.random() * inst.step * 2).toFixed(inst.decimals));
-        const low = Number((Math.min(open, close) - Math.random() * inst.step * 2).toFixed(inst.decimals));
-        lastClose = close;
-        chartCandles.push({ time, open, high, low, close });
-      }
-      if (chartCandles.length > 0) chartCandles[chartCandles.length - 1].close = base;
-      candleSeries.setData(chartCandles);
-    }
-
-    async function refreshData() {
-      if (!currentAccount) return;
-      const { data } = await supabaseClient
-        .from('positions')
-        .select('*')
-        .eq('account_id', currentAccount.id)
-        .eq('status', 'OPEN')
-        .order('created_at', { ascending: false });
-      openPositions = data || [];
-      updateAccountMetrics();
-    }
-
-    function calculatePositionPnlNGN(pos) {
-      const inst = INSTRUMENTS[pos.symbol];
-      if (!inst) return 0;
-      const currentPrice = inst.price;
-      const diff = pos.side === 'BUY' ? (currentPrice - Number(pos.open_price)) : (Number(pos.open_price) - currentPrice);
-      const usdPnl = diff * Number(pos.lot_size) * Number(pos.contract_size || inst.contract);
-      return usdPnl * USD_NGN_RATE;
-    }
-
-    function updateAccountMetrics() {
-      if (!currentAccount) return;
-      let totalFloatingPnl = 0;
-      let totalMarginUsed = 0;
-
-      openPositions.forEach(pos => {
-        totalFloatingPnl += calculatePositionPnlNGN(pos);
-        totalMarginUsed += Number(pos.margin_used_ngn || 0);
-      });
-
-      const balance = Number(currentAccount.balance);
-      const equity = balance + totalFloatingPnl;
-      const freeMargin = Math.max(0, equity - totalMarginUsed);
-
-      document.getElementById('balanceDisplay').innerText = fmtNGN(balance);
-      document.getElementById('equityDisplay').innerText = fmtNGN(equity);
-      document.getElementById('equityDisplay').className = `font-bold text-sm ${equity >= balance ? 'text-emerald-600' : 'text-rose-600'}`;
-      document.getElementById('freeMarginDisplay').innerText = fmtNGN(freeMargin);
-      document.getElementById('openCountDisplay').innerText = openPositions.length;
-
-      const pnlHeader = document.getElementById('floatingPnlTotal');
-      pnlHeader.innerText = `Floating P&L: ${fmtNGN(totalFloatingPnl)}`;
-      pnlHeader.className = `text-xs font-bold tabular ${totalFloatingPnl >= 0 ? 'text-emerald-600' : 'text-rose-600'}`;
-
-      renderPositionsTable();
-    }
-
-    function renderPositionsTable() {
-      const tbody = document.getElementById('positionsTableBody');
-      if (openPositions.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" class="py-6 text-center text-slate-400">No active trades open. Select an asset above and place an order.</td></tr>';
-        return;
-      }
-
-      tbody.innerHTML = openPositions.map(pos => {
-        const inst = INSTRUMENTS[pos.symbol] || { price: pos.open_price, decimals: 2 };
-        const pnl = calculatePositionPnlNGN(pos);
-        const pnlColor = pnl >= 0 ? 'text-emerald-600 font-bold' : 'text-rose-600 font-bold';
-        const sideBadge = pos.side === 'BUY'
-          ? '<span class="bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-bold">BUY</span>'
-          : '<span class="bg-rose-100 text-rose-700 px-1.5 py-0.5 rounded font-bold">SELL</span>';
+            <!-- Asset Header Card & Chart Panel -->
+<div class="bg-[#151a24] border border-slate-800 rounded-2xl p-4 shadow-xl">
+<div class="flex justify-between items-center mb-3">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
+<svg class="w-5 h-5 text-amber-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<!-- Asset Selector Dropdown -->
+<select id="symbolSelector" onchange="changeSymbol(this.value)" class="bg-transparent text-white font-bold text-sm focus:outline-none cursor-pointer">
+<option value="XAUUSD" class="bg-[#151a24]">XAUUSD</option>
+<option value="XAGUSD" class="bg-[#151a24]">XAGUSD</option>
+<option value="USOIL" class="bg-[#151a24]">USOIL</option>
+<option value="BTCUSD" class="bg-[#151a24]">BTCUSD</option>
+<option value="US30" class="bg-[#151a24]">US30</option>
+</select>
+<span class="text-[10px] bg-slate-800 text-slate-300 px-1.5 py-0.5 rounded">Pro</span>
+</div>
+<p id="assetSubName" class="text-[11px] text-slate-400">Gold vs US Dollar</p>
+</div>
+</div>
+<div class="text-right tabular">
+<span id="livePriceDisplay" class="font-bold text-emerald-400 text-sm block">₦0.00</span>
+<span id="priceChangeDisplay" class="text-[10px] text-emerald-400 font-medium">+₦0.00 (0.00%)</span>
+</div>
+</div>
+<!-- Timeframe Selector Pills (M15, M30, H1, H4, D1) -->
+<div class="grid grid-cols-5 gap-1 bg-[#0b0e14] p-1 rounded-xl border border-slate-800/80 mb-3 text-xs font-semibold text-center">
+<button onclick="setTimeframe('15m')" id="tf-15m" class="tf-btn py-1 rounded-lg bg-amber-500 text-slate-950 font-bold shadow-sm">M15</button>
+<button onclick="setTimeframe('30m')" id="tf-30m" class="tf-btn py-1 rounded-lg text-slate-400 hover:text-white">M30</button>
+<button onclick="setTimeframe('1h')" id="tf-1h" class="tf-btn py-1 rounded-lg text-slate-400 hover:text-white">H1</button>
+<button onclick="setTimeframe('4h')" id="tf-4h" class="tf-btn py-1 rounded-lg text-slate-400 hover:text-white">H4</button>
+<button onclick="setTimeframe('1d')" id="tf-1d" class="tf-btn py-1 rounded-lg text-slate-400 hover:text-white">D1</button>
+</div>
+<!-- TradingView Candlestick Container -->
+<div id="tvChartContainer" class="w-full h-64 rounded-xl overflow-hidden bg-[#0b0e14] border border-slate-800/80 mb-4"></div>
+<!-- Volume / Lot Size Row -->
+<div class="flex items-center justify-between mb-3 bg-[#0b0e14] px-3 py-2 rounded-xl border border-slate-800">
+<span class="text-xs text-slate-400 font-medium">Lot Size (Min 0.10)</span>
+<div class="flex items-center gap-2">
+<button onclick="adjustLots(-0.05)" class="w-6 h-6 bg-slate-800 rounded-lg text-slate-200 font-bold text-xs">-</button>
+<input id="lotSizeInput" type="number" value="0.10" step="0.01" min="0.10" class="w-16 bg-transparent text-center font-bold text-sm text-white tabular focus:outline-none" />
+<button onclick="adjustLots(0.05)" class="w-6 h-6 bg-slate-800 rounded-lg text-slate-200 font-bold text-xs">+</button>
+</div>
+</div>
+<!-- Big Dual BUY / SELL Execution Buttons -->
+<div class="grid grid-cols-2 gap-2.5">
+<button onclick="placeOrder('BUY')" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 py-3 px-2 rounded-xl font-bold text-center transition shadow-lg shadow-emerald-500/20 flex flex-col items-center justify-center">
+<span class="text-xs uppercase tracking-wider flex items-center gap-1">▲ BUY</span>
+<span id="buyPriceBtn" class="text-xs font-mono tabular opacity-90 mt-0.5">₦0.00</span>
+</button>
+<button onclick="placeOrder('SELL')" class="bg-rose-600 hover:bg-rose-500 text-white py-3 px-2 rounded-xl font-bold text-center transition shadow-lg shadow-rose-600/20 flex flex-col items-center justify-center">
+<span class="text-xs uppercase tracking-wider flex items-center gap-1">▼ SELL</span>
+<span id="sellPriceBtn" class="text-xs font-mono tabular opacity-90 mt-0.5">₦0.00</span>
+</button>
+</div>
+<p id="statusMsg" class="text-[11px] text-center text-slate-400 mt-2 h-4 font-medium"></p>
+</div>
+<!-- Open Positions Panel -->
+<div class="bg-[#151a24] border border-slate-800 rounded-2xl p-4 shadow-xl">
+<div class="flex justify-between items-center mb-3">
+<h3 class="font-bold text-sm text-white flex items-center gap-2">
+Open Positions (<span id="openCountDisplay">0</span>)
+</h3>
+<span class="text-xs text-amber-400 font-semibold cursor-pointer hover:underline">View All →</span>
+</div>
+<div id="positionsContainer" class="space-y-2.5">
+<div class="text-center py-6 text-slate-500 text-xs">No active trades open. Place an order above.</div>
+</div>
+</div>
+</div>
+<!-- Bottom Mobile Navigation Bar -->
+<nav class="fixed bottom-0 left-0 right-0 bg-[#0b0e14]/95 backdrop-blur border-t border-slate-800 py-2 px-6 flex justify-between items-center z-40 max-w-md mx-auto">
+<div class="flex flex-col items-center gap-0.5 text-amber-400 cursor-pointer">
+<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+<span class="text-[10px] font-bold">Home</span>
+</div>
+<div class="flex flex-col items-center gap-0.5 text-slate-400 hover:text-white cursor-pointer">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+<span class="text-[10px] font-medium">Markets</span>
+</div>
+<div class="flex flex-col items-center gap-0.5 text-slate-400 hover:text-white cursor-pointer">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+<span class="text-[10px] font-medium">Portfolio</span>
+</div>
+<div class="flex flex-col items-center gap-0.5 text-slate-400 hover:text-white cursor-pointer">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+<span class="text-[10px] font-medium">History</span>
+</div>
+<div class="flex flex-col items-center gap-0.5 text-slate-400 hover:text-white cursor-pointer">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+<span class="text-[10px] font-medium">History</span>
+</div>
+</nav>
   <script>
-    const SUPABASE_URL = 'https://tovlcsrjjfmsvfeibvuo.supabase.co';
+    const SUPABASE_URL = '[https://tovlcsrjjfmsvfeibvuo.supabase.co](https://tovlcsrjjfmsvfeibvuo.supabase.co)';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRvdmxjc3JqamZtc3ZmZWlidnVvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ3NTIyMTUsImV4cCI6MjExMDMyODIxNX0.nm8unTJUqj-v7KdlrJeCyb0NPZ8CUcPznPmJy-K0jS0';
 
     let USD_NGN_RATE = 1600;
 
     const INSTRUMENTS = {
-      XAUUSD: { name: 'Gold', type: 'Metal', price: 2650.00, contract: 100, leverage: 100, step: 0.45, decimals: 2 },
-      XAGUSD: { name: 'Silver', type: 'Metal', price: 31.50, contract: 5000, leverage: 100, step: 0.04, decimals: 2 },
-      USOIL:  { name: 'WTI Crude Oil', type: 'Energy', price: 70.50, contract: 1000, leverage: 50, step: 0.05, decimals: 2 },
-      UKOIL:  { name: 'Brent Crude Oil', type: 'Energy', price: 74.20, contract: 1000, leverage: 50, step: 0.05, decimals: 2 },
-      EURUSD: { name: 'EUR/USD', type: 'Forex', price: 1.0850, contract: 100000, leverage: 100, step: 0.0002, decimals: 4 },
-      GBPUSD: { name: 'GBP/USD', type: 'Forex', price: 1.2950, contract: 100000, leverage: 100, step: 0.0002, decimals: 4 },
-      BTCUSD: { name: 'Bitcoin', type: 'Crypto', price: 91000.00, contract: 1, leverage: 20, step: 25.00, decimals: 2 },
-      ETHUSD: { name: 'Ethereum', type: 'Crypto', price: 3150.00, contract: 1, leverage: 20, step: 3.50, decimals: 2 },
-      US30:   { name: 'Dow Jones 30', type: 'Index', price: 43800.00, contract: 1, leverage: 50, step: 8.00, decimals: 2 },
-      AAPL:   { name: 'Apple Inc', type: 'Stock', price: 228.00, contract: 10, leverage: 20, step: 0.25, decimals: 2 }
+      XAUUSD: { name: 'Gold vs US Dollar', type: 'Metal', price: 4700.00, contract: 100, leverage: 100, step: 2.50, decimals: 2 },
+      XAGUSD: { name: 'Silver vs US Dollar', type: 'Metal', price: 58.50, contract: 5000, leverage: 100, step: 0.10, decimals: 2 },
+      USOIL:  { name: 'WTI Crude Oil', type: 'Energy', price: 74.50, contract: 1000, leverage: 50, step: 0.05, decimals: 2 },
+      BTCUSD: { name: 'Bitcoin vs US Dollar', type: 'Crypto', price: 98500.00, contract: 1, leverage: 20, step: 50.0, decimals: 2 },
+      US30:   { name: 'Dow Jones Index', type: 'Index', price: 44200.00, contract: 1, leverage: 50, step: 10.0, decimals: 2 }
     };
 
     let supabaseClient = null;
@@ -574,321 +268,7 @@
     let tvChart = null;
     let candleSeries = null;
     let chartCandles = [];
-    let currentTimeframe = '1m';
-    let isSignUpMode = false;
-
-    const fmtNGN = (num) => {
-      const val = Number(num || 0);
-      const sign = val < 0 ? '-' : '';
-      return sign + '₦' + Math.abs(val).toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    };
-
-    window.addEventListener('DOMContentLoaded', async () => {
-      await fetchLiveExchangeRate();
-      initTradingViewChart();
-      updateSymbolUI();
-      checkAuthSession();
-      startMarketTick();
-    });
-
-    function checkAuthSession() {
-      supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-      const savedUserId = localStorage.getItem('makosis_user_id');
-      if (savedUserId) {
-        loadUserAccount(savedUserId);
-      } else {
-        document.getElementById('authCard').classList.remove('hidden');
-      }
-    }
-
-    function toggleAuthMode() {
-      isSignUpMode = !isSignUpMode;
-      document.getElementById('authTitle').innerText = isSignUpMode ? 'Create Makosis Account' : 'Makosis Pro Login';
-      document.getElementById('authSubmitBtn').innerText = isSignUpMode ? 'Register & Open Account (₦10k Bonus)' : 'Log In to Terminal';
-      document.getElementById('authToggleText').innerText = isSignUpMode ? 'Already have an account?' : "Don't have an account?";
-      document.getElementById('authToggleBtn').innerText = isSignUpMode ? 'Log In' : 'Sign Up';
-      document.getElementById('extraSignupFields').classList.toggle('hidden', !isSignUpMode);
-      document.getElementById('authMsg').innerText = '';
-    }
-
-    async function handleAuthSubmit() {
-      const email = document.getElementById('authEmail').value.trim();
-      const password = document.getElementById('authPassword').value.trim();
-      const msg = document.getElementById('authMsg');
-
-      if (!email || !password) {
-        msg.innerText = 'Enter email and password.';
-        return;
-      }
-
-      msg.innerText = isSignUpMode ? 'Initializing your ₦10,000 account...' : 'Logging in...';
-
-      // Use email as a unique storage identifier locally and in trading accounts
-      const fakeUserId = 'user_' + btoa(email).replace(/[^a-zA-Z0-9]/g, '').slice(0, 16);
-
-      if (isSignUpMode) {
-        // Create trading account directly with ₦10,000 bonus
-        const { data: newAcc, error: err } = await supabaseClient
-          .from('trading_accounts')
-          .insert([{ user_id: fakeUserId, currency: 'NGN', leverage: 100, balance: 10000 }])
-          .select()
-          .single();
-
-        if (err && !err.message.includes('duplicate')) {
-          // If table row already exists, just fetch it
-          let { data: existingAcc } = await supabaseClient.from('trading_accounts').select('*').eq('user_id', fakeUserId).limit(1);
-          if (existingAcc && existingAcc.length > 0) {
-            currentAccount = existingAcc[0];
-          } else {
-            msg.innerText = 'Account setup error: ' + err.message;
-            return;
-          }
-        } else if (newAcc) {
-          currentAccount = newAcc;
-        }
-
-        localStorage.setItem('makosis_user_id', fakeUserId);
-        document.getElementById('authCard').classList.add('hidden');
-        await loadUserAccount(fakeUserId);
-      } else {
-        localStorage.setItem('makosis_user_id', fakeUserId);
-        document.getElementById('authCard').classList.add('hidden');
-        await loadUserAccount(fakeUserId);
-      }
-    }
-
-    function handleLogout() {
-      localStorage.removeItem('makosis_user_id');
-      location.reload();
-    }
-
-    async function loadUserAccount(userId) {
-      let { data: accounts } = await supabaseClient.from('trading_accounts').select('*').eq('user_id', userId).limit(1);
-      if (accounts && accounts.length > 0) {
-        currentAccount = accounts[0];
-      } else {
-        const { data: newAcc } = await supabaseClient
-          .from('trading_accounts')
-          .insert([{ user_id: userId, currency: 'NGN', leverage: 100, balance: 10000 }])
-          .select()
-          .single();
-        currentAccount = newAcc;
-      }
-      document.getElementById('mainApp').classList.remove('hidden');
-      document.getElementById('accNumberDisplay').innerText = `ACC #${currentAccount.account_number || currentAccount.id.slice(0, 6)} • Pro`;
-      await refreshData();
-    }
-
-    function toggleDepositModal(show) {
-      document.getElementById('depositModal').classList.toggle('hidden', !show);
-    }
-
-    async function depositNaira() {
-      if (!currentAccount) return;
-      const amt = parseFloat(document.getElementById('depositAmount').value);
-      if (!amt || amt < 1000) return alert('Minimum deposit is ₦1,000');
-
-      const newBalance = Number(currentAccount.balance) + amt;
-      const { error } = await supabaseClient
-        .from('trading_accounts')
-        .update({ balance: newBalance })
-        .eq('id', currentAccount.id);
-
-      if (!error) {
-        currentAccount.balance = newBalance;
-        toggleDepositModal(false);
-        updateAccountMetrics();
-      }
-    }
-
-    async function fetchLiveExchangeRate() {
-      try {
-        const res = await fetch('https://open.er-api.com/v6/latest/USD');
-        const data = await res.json();
-        if (data && data.rates && data.rates.NGN) {
-          USD_NGN_RATE = Number(data.rates.NGN);
-          document.getElementById('fxRateDisplay').innerText = `₦${USD_NGN_RATE.toFixed(0)}/$`;
-        }
-      } catch (err) {
-        console.warn('Using fallback FX rate');
-      }
-    }
-
-    function initTradingViewChart() {
-      const container = document.getElementById('tvChartContainer');
-      container.innerHTML = '';
-      tvChart = LightweightCharts.createChart(container, {
-        width: container.clientWidth,
-        height: container.clientHeight,
-        layout: { background: { type: 'solid', color: '#0f172a' }, textColor: '#94a3b8' },
-        grid: { vertLines: { color: '#1e293b' }, horzLines: { color: '#1e293b' } },
-        timeScale: { borderColor: '#334155', timeVisible: true },
-        rightPriceScale: { borderColor: '#334155' }
-      });
-      candleSeries = tvChart.addCandlestickSeries({
-        upColor: '#10b981', downColor: '#f43f5e', borderVisible: false, wickUpColor: '#10b981', wickDownColor: '#f43f5e'
-      });
-      generateInitialCandles(currentTimeframe);
-    }
-
-    function changeSymbol(newSymbol) {
-      activeSymbol = newSymbol;
-      updateSymbolUI();
-      generateInitialCandles(currentTimeframe);
-    }
-
-    function updateSymbolUI() {
-      const inst = INSTRUMENTS[activeSymbol];
-      document.getElementById('assetSpecBadge').innerText = `${inst.type} • Contract ${inst.contract.toLocaleString()} • 1:${inst.leverage} Lev`;
-      document.getElementById('livePriceDisplay').innerText = fmtNGN(inst.price * USD_NGN_RATE);
-      document.getElementById('usdRefDisplay').innerText = `$${inst.price.toFixed(inst.decimals)}`;
-      updateMarginPreview();
-    }
-
-    function adjustLots(delta) {
-      const input = document.getElementById('lotSizeInput');
-      const next = Math.max(0.10, Number((parseFloat(input.value || 0.10) + delta).toFixed(2)));
-      input.value = next;
-      updateMarginPreview();
-    }
-
-    function updateMarginPreview() {
-      const inst = INSTRUMENTS[activeSymbol];
-      const lots = parseFloat(document.getElementById('lotSizeInput').value) || 0.10;
-      const reqMargin = Math.max(100, (lots * inst.contract * inst.price * USD_NGN_RATE) / inst.leverage);
-      document.getElementById('reqMarginPreview').innerText = `Margin: ${fmtNGN(reqMargin)}`;
-    }
-
-    function setTimeframe(tf) {
-      currentTimeframe = tf;
-      document.querySelectorAll('.tf-btn').forEach(b => {
-        b.className = 'tf-btn px-2 py-0.5 rounded bg-slate-200 text-slate-700';
-      });
-      document.getElementById('tf-' + tf).className = 'tf-btn px-2 py-0.5 rounded bg-emerald-600 text-white font-bold';
-      generateInitialCandles(tf);
-    }
-
-    function generateInitialCandles(tf = '1m') {
-      const inst = INSTRUMENTS[activeSymbol];
-      const base = inst.price;
-      let intervalSeconds = tf === '5m' ? 300 : tf === '15m' ? 900 : tf === '1h' ? 3600 : 60;
-
-      const now = Math.floor(Date.now() / 1000) - (60 * intervalSeconds);
-      chartCandles = [];
-      let lastClose = base - (inst.step * 8);
-
-      for (let i = 0; i < 60; i++) {
-        const time = now + (i * intervalSeconds);
-        const open = lastClose;
-        const change = (Math.random() - 0.48) * inst.step * 4;
-        const close = Number((open + change).toFixed(inst.decimals));
-        const high = Number((Math.max(open, close) + Math.random() * inst.step * 2).toFixed(inst.decimals));
-        const low = Number((Math.min(open, close) - Math.random() * inst.step * 2).toFixed(inst.decimals));
-        lastClose = close;
-        chartCandles.push({ time, open, high, low, close });
-      }
-      if (chartCandles.length > 0) chartCandles[chartCandles.length - 1].close = base;
-      candleSeries.setData(chartCandles);
-    }
-
-    async function refreshData() {
-      if (!currentAccount) return;
-      const { data } = await supabaseClient
-        .from('positions')
-        .select('*')
-        .eq('account_id', currentAccount.id)
-        .eq('status', 'OPEN')
-        .order('created_at', { ascending: false });
-      openPositions = data || [];
-      updateAccountMetrics();
-    }
-
-    function calculatePositionPnlNGN(pos) {
-      const inst = INSTRUMENTS[pos.symbol];
-      if (!inst) return 0;
-      const currentPrice = inst.price;
-      const diff = pos.side === 'BUY' ? (currentPrice - Number(pos.open_price)) : (Number(pos.open_price) - currentPrice);
-      const usdPnl = diff * Number(pos.lot_size) * Number(pos.contract_size || inst.contract);
-      return usdPnl * USD_NGN_RATE;
-    }
-
-    function updateAccountMetrics() {
-      if (!currentAccount) return;
-      let totalFloatingPnl = 0;
-      let totalMarginUsed = 0;
-
-      openPositions.forEach(pos => {
-        totalFloatingPnl += calculatePositionPnlNGN(pos);
-        totalMarginUsed += Number(pos.margin_used_ngn || 0);
-      });
-
-      const balance = Number(currentAccount.balance);
-      const equity = balance + totalFloatingPnl;
-      const freeMargin = Math.max(0, equity - totalMarginUsed);
-
-      document.getElementById('balanceDisplay').innerText = fmtNGN(balance);
-      document.getElementById('equityDisplay').innerText = fmtNGN(equity);
-      document.getElementById('equityDisplay').className = `font-bold text-sm ${equity >= balance ? 'text-emerald-600' : 'text-rose-600'}`;
-      document.getElementById('freeMarginDisplay').innerText = fmtNGN(freeMargin);
-      document.getElementById('openCountDisplay').innerText = openPositions.length;
-
-      const pnlHeader = document.getElementById('floatingPnlTotal');
-      pnlHeader.innerText = `Floating P&L: ${fmtNGN(totalFloatingPnl)}`;
-      pnlHeader.className = `text-xs font-bold tabular ${totalFloatingPnl >= 0 ? 'text-emerald-600' : 'text-rose-600'}`;
-
-      renderPositionsTable();
-    }
-
-    function renderPositionsTable() {
-      const tbody = document.getElementById('positionsTableBody');
-      if (openPositions.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" class="py-6 text-center text-slate-400">No active trades open. Select an asset above and place an order.</td></tr>';
-        return;
-      }
-
-      tbody.innerHTML = openPositions.map(pos => {
-        const inst = INSTRUMENTS[pos.symbol] || { price: pos.open_price, decimals: 2 };
-        const pnl = calculatePositionPnlNGN(pos);
-        const pnlColor = pnl >= 0 ? 'text-emerald-600 font-bold' : 'text-rose-600 font-bold';
-        const sideBadge = pos.side === 'BUY'
-          ? '<span class="bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-bold">BUY</span>'
-          : '<span class="bg-rose-100 text-rose-700 px-1.5 py-0.5 rounded font-bold">SELL</span>';
-        const slTpText = `${pos.stop_loss ? '$' + pos.stop_loss : '—'} / ${pos.take_profit ? '$' + pos.take_profit : '—'}`;
-
-        return `
-          <tr class="hover:bg-slate-50 border-b border-slate-100">
-            <td class="py-2.5 px-2 font-bold text-slate-900">${pos.symbol}</td>
-            <td class="py-2.5 px-2">${sideBadge}</td>
-            <td class="py-2.5 px-2">${Number(pos.lot_size).toFixed(2)}</td>
-            <td class="py-2.5 px-2">$${Number(pos.open_price).toFixed(inst.decimals)}</td>
-            <td class="py-2.5 px-2 text-slate-700">$${inst.price.toFixed(inst.decimals)}</td>
-  <script>
-    const SUPABASE_URL = 'https://tovlcsrjjfmsvfeibvuo.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRvdmxjc3JqamZtc3ZmZWlidnVvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ3NTIyMTUsImV4cCI6MjExMDMyODIxNX0.nm8unTJUqj-v7KdlrJeCyb0NPZ8CUcPznPmJy-K0jS0';
-
-    let USD_NGN_RATE = 1600;
-
-    const INSTRUMENTS = {
-      XAUUSD: { name: 'Gold', type: 'Metal', price: 2650.00, contract: 100, leverage: 100, step: 0.45, decimals: 2 },
-      XAGUSD: { name: 'Silver', type: 'Metal', price: 31.50, contract: 5000, leverage: 100, step: 0.04, decimals: 2 },
-      USOIL:  { name: 'WTI Crude Oil', type: 'Energy', price: 70.50, contract: 1000, leverage: 50, step: 0.05, decimals: 2 },
-      UKOIL:  { name: 'Brent Crude Oil', type: 'Energy', price: 74.20, contract: 1000, leverage: 50, step: 0.05, decimals: 2 },
-      EURUSD: { name: 'EUR/USD', type: 'Forex', price: 1.0850, contract: 100000, leverage: 100, step: 0.0002, decimals: 4 },
-      GBPUSD: { name: 'GBP/USD', type: 'Forex', price: 1.2950, contract: 100000, leverage: 100, step: 0.0002, decimals: 4 },
-      BTCUSD: { name: 'Bitcoin', type: 'Crypto', price: 91000.00, contract: 1, leverage: 20, step: 25.00, decimals: 2 },
-      ETHUSD: { name: 'Ethereum', type: 'Crypto', price: 3150.00, contract: 1, leverage: 20, step: 3.50, decimals: 2 },
-      US30:   { name: 'Dow Jones 30', type: 'Index', price: 43800.00, contract: 1, leverage: 50, step: 8.00, decimals: 2 },
-      AAPL:   { name: 'Apple Inc', type: 'Stock', price: 228.00, contract: 10, leverage: 20, step: 0.25, decimals: 2 }
-    };
-
-    let supabaseClient = null;
-    let currentAccount = null;
-    let activeSymbol = 'XAUUSD';
-    let openPositions = [];
-    let tvChart = null;
-    let candleSeries = null;
-    let chartCandles = [];
-    let currentTimeframe = '1m';
+    let currentTimeframe = '15m';
     let isSignUpMode = false;
 
     const fmtNGN = (num) => {
@@ -940,7 +320,6 @@
           return;
         }
 
-        // Insert using only the original columns so Supabase never throws a schema cache error
         const { data: newUser, error: err } = await supabaseClient
           .from('users')
           .insert([{ email: email, password_hash: password, kyc_status: 'verified' }])
@@ -1001,9 +380,8 @@
 
       document.getElementById('authCard').classList.add('hidden');
       document.getElementById('mainApp').classList.remove('hidden');
-      document.getElementById('accNumberDisplay').innerText = `ACC #${currentAccount.account_number || currentAccount.id.slice(0, 6)} • Pro`;
+      document.getElementById('accNumberDisplay').innerText = `ACC #${currentAccount.account_number || currentAccount.id.slice(0, 6)}`;
 
-      // Initialize chart AFTER mainApp is visible so container width is not 0!
       initTradingViewChart();
       updateSymbolUI();
       await refreshData();
@@ -1033,11 +411,10 @@
 
     async function fetchLiveExchangeRate() {
       try {
-        const res = await fetch('https://open.er-api.com/v6/latest/USD');
+        const res = await fetch('[https://open.er-api.com/v6/latest/USD](https://open.er-api.com/v6/latest/USD)');
         const data = await res.json();
         if (data && data.rates && data.rates.NGN) {
           USD_NGN_RATE = Number(data.rates.NGN);
-          document.getElementById('fxRateDisplay').innerText = `₦${USD_NGN_RATE.toFixed(0)}/$`;
         }
       } catch (err) {}
     }
@@ -1048,11 +425,11 @@
       container.innerHTML = '';
       tvChart = LightweightCharts.createChart(container, {
         width: container.clientWidth || 340,
-        height: 300,
-        layout: { background: { type: 'solid', color: '#0f172a' }, textColor: '#94a3b8' },
-        grid: { vertLines: { color: '#1e293b' }, horzLines: { color: '#1e293b' } },
-        timeScale: { borderColor: '#334155', timeVisible: true },
-        rightPriceScale: { borderColor: '#334155' }
+        height: 256,
+        layout: { background: { type: 'solid', color: '#0b0e14' }, textColor: '#94a3b8' },
+        grid: { vertLines: { color: '#151a24' }, horzLines: { color: '#151a24' } },
+        timeScale: { borderColor: '#1e293b', timeVisible: true },
+        rightPriceScale: { borderColor: '#1e293b' }
       });
       candleSeries = tvChart.addCandlestickSeries({
         upColor: '#10b981', downColor: '#f43f5e', borderVisible: false, wickUpColor: '#10b981', wickDownColor: '#f43f5e'
@@ -1068,40 +445,33 @@
 
     function updateSymbolUI() {
       const inst = INSTRUMENTS[activeSymbol];
-      document.getElementById('assetSpecBadge').innerText = `${inst.type} • Contract ${inst.contract.toLocaleString()} • 1:${inst.leverage} Lev`;
-      document.getElementById('livePriceDisplay').innerText = fmtNGN(inst.price * USD_NGN_RATE);
-      document.getElementById('usdRefDisplay').innerText = `$${inst.price.toFixed(inst.decimals)}`;
-      updateMarginPreview();
+      document.getElementById('assetSubName').innerText = inst.name;
+      const priceNGN = inst.price * USD_NGN_RATE;
+      document.getElementById('livePriceDisplay').innerText = fmtNGN(priceNGN);
+      document.getElementById('buyPriceBtn').innerText = fmtNGN(priceNGN);
+      document.getElementById('sellPriceBtn').innerText = fmtNGN(priceNGN - (inst.step * USD_NGN_RATE * 0.2));
     }
 
     function adjustLots(delta) {
       const input = document.getElementById('lotSizeInput');
       const next = Math.max(0.10, Number((parseFloat(input.value || 0.10) + delta).toFixed(2)));
       input.value = next;
-      updateMarginPreview();
-    }
-
-    function updateMarginPreview() {
-      const inst = INSTRUMENTS[activeSymbol];
-      const lots = parseFloat(document.getElementById('lotSizeInput').value) || 0.10;
-      const reqMargin = Math.max(100, (lots * inst.contract * inst.price * USD_NGN_RATE) / inst.leverage);
-      document.getElementById('reqMarginPreview').innerText = `Margin: ${fmtNGN(reqMargin)}`;
     }
 
     function setTimeframe(tf) {
       currentTimeframe = tf;
       document.querySelectorAll('.tf-btn').forEach(b => {
-        b.className = 'tf-btn px-2 py-0.5 rounded bg-slate-200 text-slate-700';
+        b.className = 'tf-btn py-1 rounded-lg text-slate-400 hover:text-white';
       });
-      document.getElementById('tf-' + tf).className = 'tf-btn px-2 py-0.5 rounded bg-emerald-600 text-white font-bold';
+      document.getElementById('tf-' + tf).className = 'tf-btn py-1 rounded-lg bg-amber-500 text-slate-950 font-bold shadow-sm';
       generateInitialCandles(tf);
     }
 
-    function generateInitialCandles(tf = '1m') {
+    function generateInitialCandles(tf = '15m') {
       if (!candleSeries) return;
       const inst = INSTRUMENTS[activeSymbol];
       const base = inst.price;
-      let intervalSeconds = tf === '5m' ? 300 : tf === '15m' ? 900 : tf === '1h' ? 3600 : 60;
+      let intervalSeconds = tf === '30m' ? 1800 : tf === '1h' ? 3600 : tf === '4h' ? 14400 : tf === '1d' ? 86400 : 900;
 
       const now = Math.floor(Date.now() / 1000) - (60 * intervalSeconds);
       chartCandles = [];
@@ -1154,52 +524,46 @@
 
       const balance = Number(currentAccount.balance);
       const equity = balance + totalFloatingPnl;
-      const freeMargin = Math.max(0, equity - totalMarginUsed);
 
       document.getElementById('balanceDisplay').innerText = fmtNGN(balance);
-      document.getElementById('equityDisplay').innerText = fmtNGN(equity);
-      document.getElementById('equityDisplay').className = `font-bold text-sm ${equity >= balance ? 'text-emerald-400' : 'text-rose-400'}`;
-      document.getElementById('freeMarginDisplay').innerText = fmtNGN(freeMargin);
+      document.getElementById('equityDisplay').innerText = `${totalFloatingPnl >= 0 ? '+' : ''}${fmtNGN(totalFloatingPnl)} (${((totalFloatingPnl/balance)*100).toFixed(2)}%)`;
+      document.getElementById('equityDisplay').className = `text-xs font-semibold ${totalFloatingPnl >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
       document.getElementById('openCountDisplay').innerText = openPositions.length;
 
-      const pnlHeader = document.getElementById('floatingPnlTotal');
-      pnlHeader.innerText = `Floating P&L: ${fmtNGN(totalFloatingPnl)}`;
-      pnlHeader.className = `text-xs font-bold tabular ${totalFloatingPnl >= 0 ? 'text-emerald-600' : 'text-rose-600'}`;
-
-      renderPositionsTable();
+      renderPositionsList();
     }
 
-    function renderPositionsTable() {
-      const tbody = document.getElementById('positionsTableBody');
+    function renderPositionsList() {
+      const container = document.getElementById('positionsContainer');
       if (openPositions.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" class="py-6 text-center text-slate-400">No active trades open. Select an asset above and place an order.</td></tr>';
+        container.innerHTML = '<div class="text-center py-6 text-slate-500 text-xs">No active trades open. Place an order above.</div>';
         return;
       }
 
-      tbody.innerHTML = openPositions.map(pos => {
+      container.innerHTML = openPositions.map(pos => {
         const inst = INSTRUMENTS[pos.symbol] || { price: pos.open_price, decimals: 2 };
         const pnl = calculatePositionPnlNGN(pos);
-        const pnlColor = pnl >= 0 ? 'text-emerald-600 font-bold' : 'text-rose-600 font-bold';
+        const pnlColor = pnl >= 0 ? 'text-emerald-400 font-bold' : 'text-rose-400 font-bold';
         const sideBadge = pos.side === 'BUY'
-          ? '<span class="bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-bold">BUY</span>'
-          : '<span class="bg-rose-100 text-rose-700 px-1.5 py-0.5 rounded font-bold">SELL</span>';
-        const slTpText = `${pos.stop_loss ? '$' + pos.stop_loss : '—'} / ${pos.take_profit ? '$' + pos.take_profit : '—'}`;
+          ? '<span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-1.5 py-0.5 rounded text-[10px] font-bold">BUY</span>'
+          : '<span class="bg-rose-500/10 text-rose-400 border border-rose-500/20 px-1.5 py-0.5 rounded text-[10px] font-bold">SELL</span>';
 
         return `
-          <tr class="hover:bg-slate-50 border-b border-slate-100">
-            <td class="py-2.5 px-2 font-bold text-slate-900">${pos.symbol}</td>
-            <td class="py-2.5 px-2">${sideBadge}</td>
-            <td class="py-2.5 px-2">${Number(pos.lot_size).toFixed(2)}</td>
-            <td class="py-2.5 px-2">$${Number(pos.open_price).toFixed(inst.decimals)}</td>
-            <td class="py-2.5 px-2 text-slate-700">$${inst.price.toFixed(inst.decimals)}</td>
-            <td class="py-2.5 px-2 text-slate-500 text-[11px]">${slTpText}</td>
-            <td class="py-2.5 px-2 ${pnlColor}">${fmtNGN(pnl)}</td>
-            <td class="py-2.5 px-2 text-right">
-              <button onclick="closePosition('${pos.id}')" class="bg-slate-800 hover:bg-rose-600 text-white px-2.5 py-1 rounded text-[11px] font-semibold transition">
+          <div class="bg-[#0b0e14] border border-slate-800/80 rounded-xl p-3 flex justify-between items-center text-xs tabular">
+            <div>
+              <div class="flex items-center gap-2 mb-1">
+                <span class="font-bold text-white">${pos.symbol}</span>
+                ${sideBadge}
+              </div>
+              <p class="text-[11px] text-slate-400">${Number(pos.lot_size).toFixed(2)} Lots &bull; Entry $${Number(pos.open_price).toFixed(inst.decimals)}</p>
+            </div>
+            <div class="text-right">
+              <span class="block ${pnlColor} text-sm">${fmtNGN(pnl)}</span>
+              <button onclick="closePosition('${pos.id}')" class="mt-1 bg-slate-800 hover:bg-rose-600 text-slate-300 hover:text-white px-2 py-0.5 rounded text-[10px] font-semibold transition">
                 Close
               </button>
-            </td>
-          </tr>
+            </div>
+          </div>
         `;
       }).join('');
     }
@@ -1207,9 +571,6 @@
     async function placeOrder(side) {
       if (!currentAccount) return;
       const size = Math.max(0.10, parseFloat(document.getElementById('lotSizeInput').value) || 0.10);
-      const sl = parseFloat(document.getElementById('slInput').value) || null;
-      const tp = parseFloat(document.getElementById('tpInput').value) || null;
-
       const inst = INSTRUMENTS[activeSymbol];
       const entryPrice = inst.price;
       const requiredMargin = Math.max(100, (size * inst.contract * entryPrice * USD_NGN_RATE) / inst.leverage);
@@ -1223,7 +584,7 @@
       const freeMargin = (Number(currentAccount.balance) + totalFloatingPnl) - totalMarginUsed;
 
       if (requiredMargin > freeMargin) {
-        return alert(`Insufficient Free Margin! Need ${fmtNGN(requiredMargin)}, available ${fmtNGN(freeMargin)}.`);
+        return alert(`Insufficient Free Margin! Need ${fmtNGN(requiredMargin)}.`);
       }
 
       document.getElementById('statusMsg').innerText = 'Executing order...';
@@ -1234,8 +595,6 @@
         lot_size: size,
         contract_size: inst.contract,
         open_price: entryPrice,
-        stop_loss: sl,
-        take_profit: tp,
         usd_ngn_rate: USD_NGN_RATE,
         margin_used_ngn: requiredMargin,
         status: 'OPEN'
@@ -1244,14 +603,12 @@
       if (error) {
         document.getElementById('statusMsg').innerText = 'Error: ' + error.message;
       } else {
-        document.getElementById('statusMsg').innerText = `${side} ${size} lots ${activeSymbol} filled @ $${entryPrice}`;
-        document.getElementById('slInput').value = '';
-        document.getElementById('tpInput').value = '';
+        document.getElementById('statusMsg').innerText = `${side} ${size} lots ${activeSymbol} filled successfully!`;
         await refreshData();
       }
     }
 
-    async function closePosition(posId, reason = 'Manual Close') {
+    async function closePosition(posId) {
       const pos = openPositions.find(p => p.id === posId);
       if (!pos || !currentAccount) return;
 
@@ -1266,7 +623,6 @@
       await supabaseClient.from('positions').update({ status: 'CLOSED', close_price: closePrice, profit_ngn: realizedPnlNGN }).eq('id', posId);
       await supabaseClient.from('trading_accounts').update({ balance: newBalance }).eq('id', currentAccount.id);
 
-      document.getElementById('statusMsg').innerText = `${reason}: ${pos.symbol} closed (${fmtNGN(realizedPnlNGN)})`;
       updateAccountMetrics();
     }
 
@@ -1280,9 +636,7 @@
 
         const activeInst = INSTRUMENTS[activeSymbol];
         if (document.getElementById('livePriceDisplay')) {
-          document.getElementById('livePriceDisplay').innerText = fmtNGN(activeInst.price * USD_NGN_RATE);
-          document.getElementById('usdRefDisplay').innerText = `$${activeInst.price.toFixed(activeInst.decimals)}`;
-          updateMarginPreview();
+          updateSymbolUI();
         }
 
         if (candleSeries && chartCandles.length > 0) {
@@ -1293,22 +647,9 @@
           candleSeries.update(lastCandle);
         }
 
-        [...openPositions].forEach(pos => {
-          const inst = INSTRUMENTS[pos.symbol];
-          if (!inst) return;
-          const p = inst.price;
-          if (pos.side === 'BUY') {
-            if (pos.stop_loss && p <= Number(pos.stop_loss)) closePosition(pos.id, 'Stop Loss Hit');
-            else if (pos.take_profit && p >= Number(pos.take_profit)) closePosition(pos.id, 'Take Profit Hit');
-          } else {
-            if (pos.stop_loss && p >= Number(pos.stop_loss)) closePosition(pos.id, 'Stop Loss Hit');
-            else if (pos.take_profit && p <= Number(pos.take_profit)) closePosition(pos.id, 'Take Profit Hit');
-          }
-        });
-
         if (currentAccount) updateAccountMetrics();
       }, 1000);
     }
   </script>
 </body>
-</html>
+</html>                                                                             </div>
